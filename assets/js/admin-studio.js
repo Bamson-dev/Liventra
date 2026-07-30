@@ -180,6 +180,14 @@
                     return;
                 }
 
+                // Edit Offer Trigger (Works from Timeline canvas or Offers list)
+                if (target.classList.contains('btn-edit-offer')) {
+                    e.preventDefault();
+                    const offerId = parseInt(target.getAttribute('data-offer-id'), 10);
+                    app.openEditOfferModal(offerId);
+                    return;
+                }
+
                 // Delete Offer Trigger
                 if (target.classList.contains('btn-delete-offer')) {
                     e.preventDefault();
@@ -194,6 +202,14 @@
                 if (target.id === 'btn-trigger-add-chat') {
                     e.preventDefault();
                     app.openAddChatModal();
+                    return;
+                }
+
+                // Edit Chat Message Trigger
+                if (target.classList.contains('btn-edit-chat')) {
+                    e.preventDefault();
+                    const chatId = parseInt(target.getAttribute('data-chat-id'), 10);
+                    app.openEditChatModal(chatId);
                     return;
                 }
 
@@ -517,6 +533,7 @@
                     return `
                         <div>
                             <h4 style="margin-top:0; color:var(--lv-text);">Webinar Schedule & Track Canvas</h4>
+                            <p style="font-size:12px; color:var(--lv-text-muted);">Click on any conversion offer block below to edit its trigger time, headline, or destination link.</p>
                             <div class="liventra-timeline-track">
                                 <div class="liventra-track-header">
                                     <span>🎥 Video Stream Track</span>
@@ -529,11 +546,13 @@
                             <div class="liventra-timeline-track">
                                 <div class="liventra-track-header">
                                     <span>💰 Conversion Offers Track</span>
-                                    <span>${this.wizardDraft.offers.length} Triggers Active</span>
+                                    <span>${this.wizardDraft.offers.length} Triggers Active (Click block to edit)</span>
                                 </div>
                                 <div class="liventra-track-items">
                                     ${this.wizardDraft.offers.map(o => `
-                                        <div class="liventra-timeline-block block-cta" style="left:20%; width:30%;">${o.name} (${o.time})</div>
+                                        <div class="liventra-timeline-block block-cta btn-edit-offer" data-offer-id="${o.id}" style="left:15%; width:40%; cursor:pointer;" title="Click to Edit Trigger">
+                                            ✏️ ${o.name} (${o.time})
+                                        </div>
                                     `).join('')}
                                 </div>
                             </div>
@@ -556,6 +575,7 @@
                                         <div style="font-size:12px; color:var(--lv-success); margin-top:4px;">Triggers at ${o.time} (Stays visible for ${o.duration})</div>
                                     </div>
                                     <div style="display:flex; gap:8px;">
+                                        <button class="liventra-btn liventra-btn-secondary btn-edit-offer" data-offer-id="${o.id}" style="font-size:11px; padding:4px 10px;">✏️ Edit</button>
                                         <button class="liventra-btn liventra-btn-danger btn-delete-offer" data-offer-id="${o.id}" style="font-size:11px; padding:4px 10px;">🗑️ Delete</button>
                                     </div>
                                 </div>
@@ -578,6 +598,7 @@
                                         <div style="font-size:13px; color:var(--lv-text); margin-top:4px;">"${m.text}"</div>
                                     </div>
                                     <div style="display:flex; gap:8px;">
+                                        <button class="liventra-btn liventra-btn-secondary btn-edit-chat" data-chat-id="${m.id}" style="font-size:11px; padding:4px 10px;">✏️ Edit</button>
                                         <button class="liventra-btn liventra-btn-danger btn-delete-chat" data-chat-id="${m.id}" style="font-size:11px; padding:4px 10px;">🗑️ Delete</button>
                                     </div>
                                 </div>
@@ -704,6 +725,99 @@
 
                 root.innerHTML = '';
                 this.showToast('✓ Chat Message Added');
+                this.renderMainContent();
+            });
+        }
+
+        openEditOfferModal(offerId) {
+            const offer = this.wizardDraft.offers.find(o => o.id === offerId);
+            if (!offer) return;
+            const root = document.getElementById('liventra-modal-root');
+            if (!root) return;
+            root.innerHTML = `
+                <div class="liventra-modal-backdrop">
+                    <div class="liventra-modal">
+                        <div class="liventra-modal-header">
+                            <h3>✏️ Edit Conversion Offer Trigger</h3>
+                            <button class="liventra-modal-close">&times;</button>
+                        </div>
+                        <div class="liventra-form-group">
+                            <label>Offer Name / Headline</label>
+                            <input type="text" id="modal-edit-offer-name" class="liventra-input" value="${offer.name}" />
+                        </div>
+                        <div class="liventra-form-group">
+                            <label>Checkout / Destination URL</label>
+                            <input type="text" id="modal-edit-offer-link" class="liventra-input" value="${offer.link}" />
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                            <div class="liventra-form-group">
+                                <label>Trigger Time (mm:ss)</label>
+                                <input type="text" id="modal-edit-offer-time" class="liventra-input" value="${offer.time}" />
+                            </div>
+                            <div class="liventra-form-group">
+                                <label>Display Duration</label>
+                                <input type="text" id="modal-edit-offer-duration" class="liventra-input" value="${offer.duration}" />
+                            </div>
+                        </div>
+                        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+                            <button class="liventra-btn liventra-btn-secondary liventra-modal-close">Cancel</button>
+                            <button id="btn-save-edit-offer" class="liventra-btn liventra-btn-primary">Update Offer</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('btn-save-edit-offer').addEventListener('click', () => {
+                offer.name = document.getElementById('modal-edit-offer-name').value || offer.name;
+                offer.link = document.getElementById('modal-edit-offer-link').value || offer.link;
+                offer.time = document.getElementById('modal-edit-offer-time').value || offer.time;
+                offer.duration = document.getElementById('modal-edit-offer-duration').value || offer.duration;
+
+                root.innerHTML = '';
+                this.showToast('✓ Conversion Offer Updated');
+                this.renderMainContent();
+            });
+        }
+
+        openEditChatModal(chatId) {
+            const chat = this.wizardDraft.chatMessages.find(m => m.id === chatId);
+            if (!chat) return;
+            const root = document.getElementById('liventra-modal-root');
+            if (!root) return;
+            root.innerHTML = `
+                <div class="liventra-modal-backdrop">
+                    <div class="liventra-modal">
+                        <div class="liventra-modal-header">
+                            <h3>✏️ Edit Scripted Chat Message</h3>
+                            <button class="liventra-modal-close">&times;</button>
+                        </div>
+                        <div class="liventra-form-group">
+                            <label>Author / Speaker Name</label>
+                            <input type="text" id="modal-edit-chat-author" class="liventra-input" value="${chat.author}" />
+                        </div>
+                        <div class="liventra-form-group">
+                            <label>Message Content</label>
+                            <input type="text" id="modal-edit-chat-text" class="liventra-input" value="${chat.text}" />
+                        </div>
+                        <div class="liventra-form-group">
+                            <label>Trigger Time (mm:ss)</label>
+                            <input type="text" id="modal-edit-chat-time" class="liventra-input" value="${chat.time}" />
+                        </div>
+                        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+                            <button class="liventra-btn liventra-btn-secondary liventra-modal-close">Cancel</button>
+                            <button id="btn-save-edit-chat" class="liventra-btn liventra-btn-primary">Update Message</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('btn-save-edit-chat').addEventListener('click', () => {
+                chat.author = document.getElementById('modal-edit-chat-author').value || chat.author;
+                chat.text = document.getElementById('modal-edit-chat-text').value || chat.text;
+                chat.time = document.getElementById('modal-edit-chat-time').value || chat.time;
+
+                root.innerHTML = '';
+                this.showToast('✓ Chat Message Updated');
                 this.renderMainContent();
             });
         }
