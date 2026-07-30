@@ -1,6 +1,7 @@
 /**
  * Liventra Customer-Centric Admin Studio & Guided Webinar Wizard (assets/js/admin-studio.js)
- * Features Real CRUD for Offers & Chat Messages, Live State Binding, and 7-Step Guided Wizard (No Email step).
+ * Features Real CRUD for Offers & Chat Messages, Live State Binding, 7-Step Guided Wizard (No Email step),
+ * Persistent LocalStorage Catalog, Clear All Webinars, and Realistic Interactive Live Room Preview Player.
  * Fully compatible with script optimizer plugins (SpeedyCache, SiteSEO, WP Rocket).
  */
 
@@ -30,12 +31,21 @@
             this.wizardStep = 1; // 1 to 7
             this.activeWebinarId = options.webinarId || 1;
 
-            // Managed Webinars Catalog
-            this.webinars = [
-                { id: 1, title: 'High-Ticket Evergreen Masterclass', status: 'published', attendees: 142, revenue: '$14,850', watchTime: '24m 18s', provider: 'Bunny.net CDN' },
-                { id: 2, title: 'SaaS Automated Onboarding Demo', status: 'published', attendees: 89, revenue: '$8,200', watchTime: '18m 45s', provider: 'HLS Stream' },
-                { id: 3, title: 'Q3 Product Roadmap Announcement', status: 'draft', attendees: 0, revenue: '$0', watchTime: '0m', provider: 'Direct MP4' }
-            ];
+            // Managed Webinars Catalog (Persisted in localStorage)
+            const saved = localStorage.getItem('liventra_webinars_store');
+            if (saved !== null) {
+                try {
+                    this.webinars = JSON.parse(saved);
+                } catch(e) {
+                    this.webinars = [];
+                }
+            } else {
+                this.webinars = [
+                    { id: 1, title: 'High-Ticket Evergreen Masterclass', status: 'published', attendees: 142, revenue: '$14,850', watchTime: '24m 18s', provider: 'Bunny.net CDN' },
+                    { id: 2, title: 'SaaS Automated Onboarding Demo', status: 'published', attendees: 89, revenue: '$8,200', watchTime: '18m 45s', provider: 'HLS Stream' }
+                ];
+                localStorage.setItem('liventra_webinars_store', JSON.stringify(this.webinars));
+            }
 
             // Active Guided Wizard Draft State (Live Editable)
             this.wizardDraft = {
@@ -44,7 +54,7 @@
                 host: 'Bamidele Matthew',
                 timezone: 'UTC+1 (Lagos / London)',
                 videoProvider: 'bunny',
-                videoUrl: 'https://cdn.liventra.com/masterclass-v1.mp4',
+                videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
                 videoDuration: '42:15',
                 scheduleType: 'jit', // 'jit' | 'instant' | 'scheduled'
                 offers: [
@@ -60,6 +70,10 @@
             this.init();
         }
 
+        saveWebinars() {
+            localStorage.setItem('liventra_webinars_store', JSON.stringify(this.webinars));
+        }
+
         init() {
             if (!this.container) return;
             this.renderLayout();
@@ -73,7 +87,7 @@
                     <header class="liventra-header">
                         <div class="liventra-header-title">
                             <h2>⚡ Liventra Webinar Engine</h2>
-                            <span class="liventra-badge liventra-badge-primary">v1.0.4 Enterprise</span>
+                            <span class="liventra-badge liventra-badge-primary">v1.0.8 Enterprise</span>
                         </div>
                         <div class="liventra-header-actions">
                             <button id="btn-quick-create" class="liventra-btn liventra-btn-primary">➕ Create New Webinar</button>
@@ -180,7 +194,7 @@
                     return;
                 }
 
-                // Edit Offer Trigger (Works from Timeline canvas or Offers list)
+                // Edit Offer Trigger
                 if (target.classList.contains('btn-edit-offer')) {
                     e.preventDefault();
                     const offerId = parseInt(target.getAttribute('data-offer-id'), 10);
@@ -239,6 +253,13 @@
                     return;
                 }
 
+                // Clear All Webinars Trigger
+                if (target.id === 'btn-clear-all-webinars') {
+                    e.preventDefault();
+                    app.clearAllWebinars();
+                    return;
+                }
+
                 // Modal Close Button
                 if (target.classList.contains('liventra-modal-close')) {
                     e.preventDefault();
@@ -286,7 +307,6 @@
         }
 
         bindWizardFormInputs() {
-            // Live Form Inputs Binding to Draft State
             const inpTitle = document.getElementById('inp-wizard-title');
             if (inpTitle) inpTitle.addEventListener('input', (e) => this.wizardDraft.title = e.target.value);
 
@@ -330,7 +350,7 @@
                     <div class="liventra-card">
                         <div class="liventra-card-title">Active Webinars</div>
                         <div class="liventra-card-value">${this.webinars.length} Automated</div>
-                        <div class="liventra-card-subtext">2 Published | 1 Draft</div>
+                        <div class="liventra-card-subtext">${this.webinars.filter(w => w.status === 'published').length} Published | ${this.webinars.filter(w => w.status === 'draft').length} Draft</div>
                     </div>
                 </div>
 
@@ -339,33 +359,38 @@
                         <h3 style="margin:0; font-size:16px; color:var(--lv-text);">🎥 Managed Automated Webinars</h3>
                         <button class="liventra-btn liventra-btn-primary btn-trigger-create">+ Build New Webinar</button>
                     </div>
-                    <table style="width:100%; border-collapse:collapse; font-size:13px; color:var(--lv-text);">
-                        <thead>
-                            <tr style="border-bottom:1px solid var(--lv-border); text-align:left; color:var(--lv-text-muted);">
-                                <th style="padding:10px;">Title</th>
-                                <th style="padding:10px;">Stream Provider</th>
-                                <th style="padding:10px;">Status</th>
-                                <th style="padding:10px;">Viewers</th>
-                                <th style="padding:10px;">Revenue</th>
-                                <th style="padding:10px;">Quick Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${this.webinars.map(w => `
-                                <tr style="border-bottom:1px solid var(--lv-border);">
-                                    <td style="padding:12px; font-weight:600;">${w.title}</td>
-                                    <td style="padding:12px; color:var(--lv-text-muted);">${w.provider}</td>
-                                    <td style="padding:12px;"><span class="liventra-badge ${w.status === 'published' ? 'liventra-badge-success' : 'liventra-badge-warning'}">${w.status}</span></td>
-                                    <td style="padding:12px;">${w.attendees}</td>
-                                    <td style="padding:12px; color:var(--lv-success); font-weight:600;">${w.revenue}</td>
-                                    <td style="padding:12px;">
-                                        <button class="liventra-btn liventra-btn-secondary btn-trigger-create" style="padding:4px 10px; font-size:11px;">Edit Wizard</button>
-                                        <button class="liventra-btn liventra-btn-secondary btn-duplicate-webinar" data-webinar-id="${w.id}" style="padding:4px 10px; font-size:11px;">Duplicate</button>
-                                    </td>
+                    ${this.webinars.length === 0 ? `
+                        <div style="padding:24px; text-align:center; color:var(--lv-text-muted);">No webinars created yet. Click "+ Build New Webinar" above to create your first evergreen webinar!</div>
+                    ` : `
+                        <table style="width:100%; border-collapse:collapse; font-size:13px; color:var(--lv-text);">
+                            <thead>
+                                <tr style="border-bottom:1px solid var(--lv-border); text-align:left; color:var(--lv-text-muted);">
+                                    <th style="padding:10px;">Title</th>
+                                    <th style="padding:10px;">Stream Provider</th>
+                                    <th style="padding:10px;">Status</th>
+                                    <th style="padding:10px;">Viewers</th>
+                                    <th style="padding:10px;">Revenue</th>
+                                    <th style="padding:10px;">Quick Actions</th>
                                 </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                ${this.webinars.map(w => `
+                                    <tr style="border-bottom:1px solid var(--lv-border);">
+                                        <td style="padding:12px; font-weight:600;">${w.title}</td>
+                                        <td style="padding:12px; color:var(--lv-text-muted);">${w.provider}</td>
+                                        <td style="padding:12px;"><span class="liventra-badge ${w.status === 'published' ? 'liventra-badge-success' : 'liventra-badge-warning'}">${w.status}</span></td>
+                                        <td style="padding:12px;">${w.attendees}</td>
+                                        <td style="padding:12px; color:var(--lv-success); font-weight:600;">${w.revenue}</td>
+                                        <td style="padding:12px;">
+                                            <button class="liventra-btn liventra-btn-secondary btn-trigger-create" style="padding:4px 8px; font-size:11px;">Edit Wizard</button>
+                                            <button class="liventra-btn liventra-btn-secondary btn-duplicate-webinar" data-webinar-id="${w.id}" style="padding:4px 8px; font-size:11px;">Duplicate</button>
+                                            <button class="liventra-btn liventra-btn-danger btn-delete-webinar" data-webinar-id="${w.id}" style="padding:4px 8px; font-size:11px;">Delete</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `}
                 </div>
             `;
         }
@@ -373,25 +398,36 @@
         renderMyWebinarsView() {
             return `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                    <h3 style="margin:0; font-size:18px; color:var(--lv-text);">🎥 All Managed Webinars</h3>
-                    <button class="liventra-btn liventra-btn-primary btn-trigger-create">+ Create Webinar</button>
+                    <h3 style="margin:0; font-size:18px; color:var(--lv-text);">🎥 All Managed Webinars (${this.webinars.length})</h3>
+                    <div style="display:flex; gap:10px;">
+                        ${this.webinars.length > 0 ? `<button id="btn-clear-all-webinars" class="liventra-btn liventra-btn-danger" style="font-size:12px;">🗑️ Clear All Webinars</button>` : ''}
+                        <button class="liventra-btn liventra-btn-primary btn-trigger-create">+ Create Webinar</button>
+                    </div>
                 </div>
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:16px;">
-                    ${this.webinars.map(w => `
-                        <div class="liventra-card">
-                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-                                <h4 style="margin:0; font-size:16px; color:var(--lv-text);">${w.title}</h4>
-                                <span class="liventra-badge ${w.status === 'published' ? 'liventra-badge-success' : 'liventra-badge-warning'}">${w.status}</span>
+                ${this.webinars.length === 0 ? `
+                    <div class="liventra-card" style="padding:40px; text-align:center;">
+                        <h4 style="margin:0 0 8px 0; color:var(--lv-text);">No Webinars Found</h4>
+                        <p style="color:var(--lv-text-muted); margin-bottom:16px;">You have no webinars in your catalog. Click below to create your first webinar!</p>
+                        <button class="liventra-btn liventra-btn-primary btn-trigger-create">+ Create Webinar</button>
+                    </div>
+                ` : `
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:16px;">
+                        ${this.webinars.map(w => `
+                            <div class="liventra-card">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                                    <h4 style="margin:0; font-size:16px; color:var(--lv-text);">${w.title}</h4>
+                                    <span class="liventra-badge ${w.status === 'published' ? 'liventra-badge-success' : 'liventra-badge-warning'}">${w.status}</span>
+                                </div>
+                                <p style="margin:0 0 16px 0; font-size:12px; color:var(--lv-text-muted);">Provider: ${w.provider} | Watch Time: ${w.watchTime}</p>
+                                <div style="display:flex; gap:8px;">
+                                    <button class="liventra-btn liventra-btn-primary btn-trigger-create" style="font-size:11px; padding:6px 12px;">Edit Wizard</button>
+                                    <button class="liventra-btn liventra-btn-secondary btn-duplicate-webinar" data-webinar-id="${w.id}" style="font-size:11px; padding:6px 12px;">Duplicate</button>
+                                    <button class="liventra-btn liventra-btn-danger btn-delete-webinar" data-webinar-id="${w.id}" style="font-size:11px; padding:6px 12px;">Delete</button>
+                                </div>
                             </div>
-                            <p style="margin:0 0 16px 0; font-size:12px; color:var(--lv-text-muted);">Provider: ${w.provider} | Watch Time: ${w.watchTime}</p>
-                            <div style="display:flex; gap:8px;">
-                                <button class="liventra-btn liventra-btn-primary btn-trigger-create" style="font-size:11px; padding:6px 12px;">Edit Wizard</button>
-                                <button class="liventra-btn liventra-btn-secondary btn-duplicate-webinar" data-webinar-id="${w.id}" style="font-size:11px; padding:6px 12px;">Duplicate</button>
-                                <button class="liventra-btn liventra-btn-danger btn-delete-webinar" data-webinar-id="${w.id}" style="font-size:11px; padding:6px 12px;">Delete</button>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
+                        `).join('')}
+                    </div>
+                `}
             `;
         }
 
@@ -409,17 +445,28 @@
                 provider: target.provider
             };
             this.webinars.unshift(clone);
+            this.saveWebinars();
             this.showToast('✓ Duplicated Webinar: ' + clone.title);
             this.renderMainContent();
         }
 
         deleteWebinar(webinarId) {
             this.webinars = this.webinars.filter(w => w.id !== webinarId);
+            this.saveWebinars();
             this.showToast('✓ Deleted Webinar');
             this.renderMainContent();
         }
 
-        /* ➕ Guided 7-Step Webinar Builder Wizard Screen (No Email Step) */
+        clearAllWebinars() {
+            if (confirm('Are you sure you want to clear all webinars from your catalog?')) {
+                this.webinars = [];
+                this.saveWebinars();
+                this.showToast('✓ All Webinars Cleared');
+                this.renderMainContent();
+            }
+        }
+
+        /* ➕ Guided 7-Step Webinar Builder Wizard Screen */
         renderWizardView() {
             const steps = [
                 { num: 1, name: 'Basic Info' },
@@ -822,6 +869,89 @@
             });
         }
 
+        /* 👁️ Interactive Live Room Preview Player Modal */
+        openPreviewModal() {
+            const root = document.getElementById('liventra-modal-root');
+            if (!root) return;
+
+            const activeWebinar = this.webinars.length > 0 ? this.webinars[0] : { title: this.wizardDraft.title, host: this.wizardDraft.host, provider: 'Bunny.net' };
+            const videoSrc = this.wizardDraft.videoUrl || 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+
+            root.innerHTML = `
+                <div class="liventra-modal-backdrop">
+                    <div class="liventra-modal" style="width: 860px; max-width: 95vw;">
+                        <div class="liventra-modal-header">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <h3 style="margin:0;">👁️ Live Session Preview Room</h3>
+                                <span class="liventra-badge liventra-badge-danger" style="animation: pulse 1.5s infinite;">🔴 LIVE NOW</span>
+                            </div>
+                            <button class="liventra-modal-close">&times;</button>
+                        </div>
+
+                        <!-- Active Webinar Selector & Metrics Bar -->
+                        <div style="background:var(--lv-bg); border:1px solid var(--lv-border); padding:12px 16px; border-radius:8px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <strong style="color:var(--lv-text); font-size:15px;">${activeWebinar.title}</strong>
+                                <div style="font-size:12px; color:var(--lv-text-muted);">Host: ${this.wizardDraft.host} | Stream: ${activeWebinar.provider || 'Bunny.net CDN'}</div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-weight:700; color:var(--lv-success); font-size:14px;">👥 142 Attendees Watching</div>
+                                <div style="font-size:11px; color:var(--lv-text-muted);">Session Status: Synchronized</div>
+                            </div>
+                        </div>
+
+                        <!-- Video Player Stage & Chat Grid -->
+                        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:16px;">
+                            <!-- Video Player Canvas -->
+                            <div style="background:#000; border-radius:8px; overflow:hidden; display:flex; flex-direction:column;">
+                                <video controls autoplay muted style="width:100%; height:320px; object-fit:cover;">
+                                    <source src="${videoSrc}" type="video/mp4">
+                                    Your browser does not support video playback.
+                                </video>
+                                <div style="background:#0F172A; padding:10px 14px; font-size:12px; color:var(--lv-text); display:flex; justify-content:space-between; align-items:center;">
+                                    <span>🎥 Liventra Player v1.0.8 (HLS + MP4 Fallback)</span>
+                                    <span style="color:var(--lv-success);">✓ Audio & Video Active</span>
+                                </div>
+                            </div>
+
+                            <!-- Live Chat Sidebar -->
+                            <div style="background:var(--lv-bg); border:1px solid var(--lv-border); border-radius:8px; display:flex; flex-direction:column; height:360px;">
+                                <div style="padding:10px 14px; border-bottom:1px solid var(--lv-border); font-weight:600; font-size:13px; color:var(--lv-text);">💬 Live Audience Chat</div>
+                                <div style="flex:1; padding:12px; overflow-y:auto; font-size:12px;">
+                                    ${this.wizardDraft.chatMessages.map(m => `
+                                        <div style="margin-bottom:10px; background:var(--lv-card-bg); padding:8px; border-radius:6px;">
+                                            <div style="font-weight:600; color:#60A5FA;">${m.author} <span style="font-size:10px; color:var(--lv-text-muted);">${m.time}</span></div>
+                                            <div style="color:var(--lv-text); margin-top:2px;">${m.text}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                <div style="padding:10px; border-top:1px solid var(--lv-border); display:flex; gap:6px;">
+                                    <input type="text" class="liventra-input" style="font-size:11px; padding:6px;" placeholder="Say something..." />
+                                    <button class="liventra-btn liventra-btn-primary" style="font-size:11px; padding:6px 10px;">Send</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Active Conversion Offer Popup Bar -->
+                        ${this.wizardDraft.offers.length > 0 ? `
+                            <div style="margin-top:16px; background:linear-gradient(90deg, #1E1B4B 0%, #312E81 100%); border:1px solid var(--lv-primary); padding:14px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <span class="liventra-badge liventra-badge-success" style="font-size:10px; margin-bottom:4px;">🔥 Active Conversion Offer</span>
+                                    <div style="font-weight:700; color:#FFF; font-size:14px;">${this.wizardDraft.offers[0].name}</div>
+                                    <div style="font-size:11px; color:#C7D2FE;">Special offer active for next ${this.wizardDraft.offers[0].duration}!</div>
+                                </div>
+                                <a href="${this.wizardDraft.offers[0].link}" target="_blank" class="liventra-btn liventra-btn-primary" style="padding:8px 16px; font-size:13px; text-decoration:none;">⚡ Claim Special Offer Now →</a>
+                            </div>
+                        ` : ''}
+
+                        <div style="margin-top:16px; display:flex; justify-content:flex-end;">
+                            <button class="liventra-btn liventra-btn-secondary liventra-modal-close">Close Live Preview</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         renderContactsView() {
             return `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -896,28 +1026,6 @@
             `;
         }
 
-        openPreviewModal() {
-            const root = document.getElementById('liventra-modal-root');
-            if (!root) return;
-            root.innerHTML = `
-                <div class="liventra-modal-backdrop">
-                    <div class="liventra-modal" style="width: 720px;">
-                        <div class="liventra-modal-header">
-                            <h3>👁️ Liventra Live Session Preview</h3>
-                            <button class="liventra-modal-close">&times;</button>
-                        </div>
-                        <div style="background:#000; border-radius:8px; height:320px; display:flex; align-items:center; justify-content:center; color:var(--lv-text-muted);">
-                            🎥 [Live Session Preview Renderer Active — 04:15 Elapsed]
-                        </div>
-                        <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center;">
-                            <span class="liventra-badge liventra-badge-success">Session Status: Synced</span>
-                            <button class="liventra-btn liventra-btn-secondary liventra-modal-close">Close Preview</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
         publishWebinar() {
             this.showToast('Publishing Webinar via REST API...');
             const url = getRestEndpoint('studio/webinars/' + this.activeWebinarId + '/publish');
@@ -927,7 +1035,7 @@
             }
 
             const newWebinar = {
-                id: this.webinars.length + 1,
+                id: Date.now(),
                 title: this.wizardDraft.title || 'New Automated Webinar',
                 status: 'published',
                 attendees: 0,
@@ -944,11 +1052,13 @@
             .then(res => res.json())
             .then(data => {
                 this.webinars.unshift(newWebinar);
+                this.saveWebinars();
                 this.showToast('🚀 Webinar Successfully Published!');
                 this.switchNav('my-webinars');
             })
             .catch(() => {
                 this.webinars.unshift(newWebinar);
+                this.saveWebinars();
                 this.showToast('🚀 Webinar Published! (Saved to Catalog)');
                 this.switchNav('my-webinars');
             });
