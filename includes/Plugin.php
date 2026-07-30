@@ -110,7 +110,7 @@ class Plugin {
 	}
 
 	/**
-	 * Boot all registered modules
+	 * Boot all registered modules and REST API routes
 	 */
 	public function boot() {
 		if ( $this->booted ) {
@@ -121,7 +121,63 @@ class Plugin {
 			$module->boot();
 		}
 
+		if ( function_exists( 'add_action' ) ) {
+			add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
+		}
+
 		$this->booted = true;
+	}
+
+	/**
+	 * Register all REST API Controllers on rest_api_init hook
+	 */
+	public function register_rest_routes() {
+		$container = Container::getInstance();
+
+		// Bind service interfaces to concrete implementations
+		$container->bind( 'Liventra\Contracts\Services\AnalyticsServiceInterface', 'Liventra\Services\AnalyticsService' );
+		$container->bind( 'Liventra\Contracts\Services\AdminStudioServiceInterface', function( $c ) {
+			return new \Liventra\Services\AdminStudioService(
+				null, null, null, null, null,
+				$c->get( 'Liventra\Contracts\Services\AnalyticsServiceInterface' )
+			);
+		} );
+		$container->bind( 'Liventra\Contracts\Services\OrganizationServiceInterface', 'Liventra\Services\OrganizationService' );
+		$container->bind( 'Liventra\Contracts\Services\PluginManagerInterface', 'Liventra\Services\PluginManagerService' );
+		$container->bind( 'Liventra\Contracts\Services\ObservabilityServiceInterface', 'Liventra\Services\ObservabilityService' );
+		$container->bind( 'Liventra\Contracts\Services\PerformanceServiceInterface', 'Liventra\Services\PerformanceService' );
+
+		// Register REST Controllers
+		try {
+			$adminStudioService = $container->get( 'Liventra\Contracts\Services\AdminStudioServiceInterface' );
+			$adminStudioCtrl    = new \Liventra\REST\AdminStudioController( $adminStudioService );
+			$adminStudioCtrl->register_routes();
+
+			$orgService = $container->get( 'Liventra\Contracts\Services\OrganizationServiceInterface' );
+			$orgCtrl    = new \Liventra\REST\OrganizationController( $orgService );
+			$orgCtrl->register_routes();
+
+			$pluginService = new \Liventra\Services\PluginManagerService();
+			$pluginCtrl    = new \Liventra\REST\PluginController( $pluginService );
+			$pluginCtrl->register_routes();
+
+			$mktCtrl = new \Liventra\REST\MarketplaceController( new \Liventra\Services\MarketplaceService() );
+			$mktCtrl->register_routes();
+
+			$opsService = new \Liventra\Services\ObservabilityService();
+			$opsCtrl    = new \Liventra\REST\ObservabilityController( $opsService );
+			$opsCtrl->register_routes();
+
+			$perfService = new \Liventra\Services\PerformanceService();
+			$perfCtrl    = new \Liventra\REST\PerformanceController( $perfService );
+			$perfCtrl->register_routes();
+
+			$sessionService = new \Liventra\Services\SessionService();
+			$sessionCtrl    = new \Liventra\REST\SessionController( $sessionService );
+			$sessionCtrl->register_routes();
+		} catch ( \Exception $e ) {
+			// Silent catch to prevent boot crashes
+		}
 	}
 
 	/**
