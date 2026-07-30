@@ -83,4 +83,18 @@
     }
 
     window.LiventraOrganizationManager = LiventraOrganizationManager;
+
+    function autoMount() {
+        const container = document.getElementById('liventra-org-manager');
+        if (container && !container.dataset.mounted) {
+            container.dataset.mounted = 'true';
+            new LiventraOrganizationManager({ containerId: 'liventra-org-manager' });
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', autoMount);
+    } else {
+        autoMount();
+    }
 })(window);

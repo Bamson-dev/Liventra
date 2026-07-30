@@ -70,4 +70,18 @@
     }
 
     window.LiventraPerformanceDashboard = LiventraPerformanceDashboard;
+
+    function autoMount() {
+        const container = document.getElementById('liventra-performance-dashboard');
+        if (container && !container.dataset.mounted) {
+            container.dataset.mounted = 'true';
+            new LiventraPerformanceDashboard({ containerId: 'liventra-performance-dashboard' });
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', autoMount);
+    } else {
+        autoMount();
+    }
 })(window);

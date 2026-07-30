@@ -81,4 +81,18 @@
     }
 
     window.LiventraOperationsDashboard = LiventraOperationsDashboard;
+
+    function autoMount() {
+        const container = document.getElementById('liventra-operations-dashboard');
+        if (container && !container.dataset.mounted) {
+            container.dataset.mounted = 'true';
+            new LiventraOperationsDashboard({ containerId: 'liventra-operations-dashboard' });
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', autoMount);
+    } else {
+        autoMount();
+    }
 })(window);

@@ -92,7 +92,8 @@ class WebinarModule implements ModuleInterface {
 	}
 
 	public function enqueue_admin_assets( $hook ) {
-		if ( false === strpos( $hook, 'liventra' ) ) {
+		$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
+		if ( false === strpos( $hook, 'liventra' ) && 0 !== strpos( $page, 'liventra' ) ) {
 			return;
 		}
 
@@ -110,7 +111,7 @@ class WebinarModule implements ModuleInterface {
 		echo '<div class="wrap">';
 		echo '<h1>' . esc_html__( 'Liventra Admin Studio & Visual Webinar Builder', 'liventra' ) . '</h1>';
 		echo '<div id="liventra-admin-studio"></div>';
-		echo '<script>document.addEventListener("DOMContentLoaded", function() { if (window.LiventraAdminStudio) { new LiventraAdminStudio({ containerId: "liventra-admin-studio" }); } });</script>';
+		echo '<script>(function(){ function init(){ if(window.LiventraAdminStudio){ new window.LiventraAdminStudio({ containerId: "liventra-admin-studio" }); } } if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded", init); } else { init(); } })();</script>';
 		echo '</div>';
 	}
 
@@ -118,7 +119,7 @@ class WebinarModule implements ModuleInterface {
 		echo '<div class="wrap">';
 		echo '<h1>' . esc_html__( 'Enterprise Organizations & Workspaces', 'liventra' ) . '</h1>';
 		echo '<div id="liventra-org-manager"></div>';
-		echo '<script>document.addEventListener("DOMContentLoaded", function() { if (window.LiventraOrganizationManager) { new LiventraOrganizationManager({ containerId: "liventra-org-manager" }); } });</script>';
+		echo '<script>(function(){ function init(){ if(window.LiventraOrganizationManager){ new window.LiventraOrganizationManager({ containerId: "liventra-org-manager" }); } } if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded", init); } else { init(); } })();</script>';
 		echo '</div>';
 	}
 
@@ -126,7 +127,7 @@ class WebinarModule implements ModuleInterface {
 		echo '<div class="wrap">';
 		echo '<h1>' . esc_html__( 'Plugin SDK & Marketplace Catalog', 'liventra' ) . '</h1>';
 		echo '<div id="liventra-plugin-manager"></div>';
-		echo '<script>document.addEventListener("DOMContentLoaded", function() { if (window.LiventraPluginManager) { new LiventraPluginManager({ containerId: "liventra-plugin-manager" }); } });</script>';
+		echo '<script>(function(){ function init(){ if(window.LiventraPluginManager){ new window.LiventraPluginManager({ containerId: "liventra-plugin-manager" }); } } if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded", init); } else { init(); } })();</script>';
 		echo '</div>';
 	}
 
@@ -134,7 +135,7 @@ class WebinarModule implements ModuleInterface {
 		echo '<div class="wrap">';
 		echo '<h1>' . esc_html__( 'Operations, Health & Observability', 'liventra' ) . '</h1>';
 		echo '<div id="liventra-operations-dashboard"></div>';
-		echo '<script>document.addEventListener("DOMContentLoaded", function() { if (window.LiventraOperationsDashboard) { new LiventraOperationsDashboard({ containerId: "liventra-operations-dashboard" }); } });</script>';
+		echo '<script>(function(){ function init(){ if(window.LiventraOperationsDashboard){ new window.LiventraOperationsDashboard({ containerId: "liventra-operations-dashboard" }); } } if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded", init); } else { init(); } })();</script>';
 		echo '</div>';
 	}
 
@@ -142,7 +143,7 @@ class WebinarModule implements ModuleInterface {
 		echo '<div class="wrap">';
 		echo '<h1>' . esc_html__( 'Performance, Scalability & Capacity Dashboard', 'liventra' ) . '</h1>';
 		echo '<div id="liventra-performance-dashboard"></div>';
-		echo '<script>document.addEventListener("DOMContentLoaded", function() { if (window.LiventraPerformanceDashboard) { new LiventraPerformanceDashboard({ containerId: "liventra-performance-dashboard" }); } });</script>';
+		echo '<script>(function(){ function init(){ if(window.LiventraPerformanceDashboard){ new window.LiventraPerformanceDashboard({ containerId: "liventra-performance-dashboard" }); } } if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded", init); } else { init(); } })();</script>';
 		echo '</div>';
 	}
 }

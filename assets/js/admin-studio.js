@@ -1,6 +1,6 @@
 /**
  * Liventra Admin Studio & Visual Webinar Builder (assets/js/admin-studio.js)
- * Interactive SaaS Dashboard & Visual Timeline Builder.
+ * Interactive SaaS Dashboard & Visual Timeline Builder with Robust Auto-Mounting.
  */
 
 (function(window) {
@@ -321,4 +321,19 @@
     }
 
     window.LiventraAdminStudio = LiventraAdminStudio;
+
+    // Robust Auto-Mount Engine (Fires immediately whether script loads before or after DOMContentLoaded)
+    function autoMount() {
+        const container = document.getElementById('liventra-admin-studio');
+        if (container && !container.dataset.mounted) {
+            container.dataset.mounted = 'true';
+            new LiventraAdminStudio({ containerId: 'liventra-admin-studio' });
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', autoMount);
+    } else {
+        autoMount();
+    }
 })(window);
