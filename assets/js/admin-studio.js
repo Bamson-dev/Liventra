@@ -1032,8 +1032,8 @@
         }
 
         renderSettingsView() {
-            const url = localStorage.getItem('liventra_supabase_url') || 'https://xyzcompany.supabase.co';
-            const key = localStorage.getItem('liventra_supabase_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+            const url = localStorage.getItem('liventra_supabase_url') || 'https://qtkuqwafpasalsgogpka.supabase.co';
+            const key = localStorage.getItem('liventra_supabase_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0a3Vxd2FmcGFzYWxzZ29ncGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0MjI1NjcsImV4cCI6MjEwMDk5ODU2N30.qtHEhL2elpZXmIz1wbBqEbvwS6ZJCA2Y1ONyvOc8wi4';
 
             return `
                 <div class="liventra-card" style="margin-bottom:20px;">

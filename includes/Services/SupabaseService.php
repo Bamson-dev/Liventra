@@ -18,8 +18,8 @@ class SupabaseService {
 	 */
 	public function getSettings() {
 		$defaults = array(
-			'url'            => get_option( 'liventra_supabase_url', 'https://xyzcompany.supabase.co' ),
-			'anon_key'       => get_option( 'liventra_supabase_anon_key', '' ),
+			'url'            => get_option( 'liventra_supabase_url', 'https://qtkuqwafpasalsgogpka.supabase.co' ),
+			'anon_key'       => get_option( 'liventra_supabase_anon_key', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0a3Vxd2FmcGFzYWxzZ29ncGthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0MjI1NjcsImV4cCI6MjEwMDk5ODU2N30.qtHEhL2elpZXmIz1wbBqEbvwS6ZJCA2Y1ONyvOc8wi4' ),
 			'realtime_sync'  => get_option( 'liventra_supabase_realtime_sync', '1' ),
 			'status'         => get_option( 'liventra_supabase_status', 'connected' ),
 			'last_synced_at' => get_option( 'liventra_supabase_last_synced', date( 'Y-m-d H:i:s' ) ),
