@@ -68,6 +68,19 @@ Runs:
 
 ---
 
+## 👤 Author & Project Ownership
+
+Liventra is solely authored, owned, designed, and maintained by **Bamidele Matthew**.
+
+* **Author**: Bamidele Matthew
+* **Maintainer**: Bamidele Matthew
+* **System Architect**: Bamidele Matthew
+* **Lead Software Engineer**: Bamidele Matthew
+* **GitHub**: [https://github.com/Bamson-dev](https://github.com/Bamson-dev)
+* **Repository**: [https://github.com/Bamson-dev/Liventra](https://github.com/Bamson-dev/Liventra)
+
+---
+
 ## 📜 Documentation & Contributing
 
 * **[CONTRIBUTING.md](file:///Users/donbamz/Liventra/CONTRIBUTING.md)**: Open-source contribution guidelines.

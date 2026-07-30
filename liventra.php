@@ -4,7 +4,7 @@
  * Plugin URI:  https://liventra.com
  * Description: Transform pre-recorded videos into realistic live webinar experiences on WordPress.
  * Version:     1.0.0
- * Author:      Liventra Team
+ * Author:      Bamidele Matthew
  * Author URI:  https://liventra.com
  * Text Domain: liventra
  * Domain Path: /languages
