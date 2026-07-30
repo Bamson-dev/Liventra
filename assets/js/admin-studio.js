@@ -1,9 +1,10 @@
 /**
  * Liventra Customer-Centric Admin Studio & Guided Webinar Wizard (assets/js/admin-studio.js)
- * Designed for complete non-technical beginners to create & publish automated webinars in under 10 minutes.
+ * Designed with Global Document Event Delegation & Retrying Mount Engine.
+ * Fully compatible with script optimizer plugins (SpeedyCache, SiteSEO, WP Rocket).
  */
 
-(function(window) {
+(function(window, document) {
     'use strict';
 
     function getRestEndpoint(endpoint) {
@@ -60,7 +61,7 @@
         init() {
             if (!this.container) return;
             this.renderLayout();
-            this.bindUniversalEvents();
+            this.bindGlobalEvents();
         }
 
         renderLayout() {
@@ -70,7 +71,7 @@
                     <header class="liventra-header">
                         <div class="liventra-header-title">
                             <h2>⚡ Liventra Webinar Engine</h2>
-                            <span class="liventra-badge liventra-badge-primary">v1.0.1 Enterprise</span>
+                            <span class="liventra-badge liventra-badge-primary">v1.0.3 Enterprise</span>
                         </div>
                         <div class="liventra-header-actions">
                             <button id="btn-quick-create" class="liventra-btn liventra-btn-primary">➕ Create New Webinar</button>
@@ -105,63 +106,77 @@
             this.renderMainContent();
         }
 
-        bindUniversalEvents() {
-            this.container.addEventListener('click', (e) => {
-                const target = e.target.closest('a, button, .liventra-nav-item, .liventra-timeline-block, .liventra-step-pill');
+        bindGlobalEvents() {
+            // Global listener on DOCUMENT to catch ALL clicks anywhere on page
+            if (window._liventraGlobalClickBound) return;
+            window._liventraGlobalClickBound = true;
+
+            document.addEventListener('click', (e) => {
+                const app = window.liventraApp;
+                if (!app) return;
+
+                const target = e.target.closest('a, button, .liventra-nav-item, .liventra-timeline-block, .liventra-step-pill, .liventra-modal-close');
                 if (!target) return;
 
-                // Handle Sidebar Navigation
+                // Sidebar Navigation
                 if (target.hasAttribute('data-nav')) {
                     e.preventDefault();
-                    const nav = target.getAttribute('data-nav');
-                    this.switchNav(nav);
+                    app.switchNav(target.getAttribute('data-nav'));
                     return;
                 }
 
-                // Handle Quick Create Button
-                if (target.id === 'btn-quick-create') {
+                // Quick Create Button
+                if (target.id === 'btn-quick-create' || target.classList.contains('btn-trigger-create')) {
                     e.preventDefault();
-                    this.switchNav('create');
+                    app.switchNav('create');
                     return;
                 }
 
-                // Handle Preview Button
+                // Preview Button
                 if (target.id === 'btn-preview-webinar' || target.id === 'liventra-btn-preview') {
                     e.preventDefault();
-                    this.openPreviewModal();
+                    app.openPreviewModal();
                     return;
                 }
 
-                // Handle Wizard Step Pill Clicks
+                // Wizard Step Pills
                 if (target.classList.contains('liventra-step-pill')) {
                     e.preventDefault();
                     const step = parseInt(target.getAttribute('data-step'), 10);
                     if (step >= 1 && step <= 8) {
-                        this.wizardStep = step;
-                        this.renderMainContent();
+                        app.wizardStep = step;
+                        app.renderMainContent();
                     }
                     return;
                 }
 
-                // Handle Wizard Next Step
+                // Wizard Next Step
                 if (target.id === 'btn-wizard-next') {
                     e.preventDefault();
-                    if (this.wizardStep < 8) {
-                        this.wizardStep++;
-                        this.renderMainContent();
+                    if (app.wizardStep < 8) {
+                        app.wizardStep++;
+                        app.renderMainContent();
                     } else {
-                        this.publishWebinar();
+                        app.publishWebinar();
                     }
                     return;
                 }
 
-                // Handle Wizard Back Step
+                // Wizard Back Step
                 if (target.id === 'btn-wizard-back') {
                     e.preventDefault();
-                    if (this.wizardStep > 1) {
-                        this.wizardStep--;
-                        this.renderMainContent();
+                    if (app.wizardStep > 1) {
+                        app.wizardStep--;
+                        app.renderMainContent();
                     }
+                    return;
+                }
+
+                // Modal Close
+                if (target.classList.contains('liventra-modal-close')) {
+                    e.preventDefault();
+                    const modalRoot = document.getElementById('liventra-modal-root');
+                    if (modalRoot) modalRoot.innerHTML = '';
                     return;
                 }
             });
@@ -170,7 +185,7 @@
         switchNav(navKey) {
             this.activeNav = navKey;
             if (navKey === 'create') {
-                this.wizardStep = 1; // Reset wizard to step 1 when clicking create
+                this.wizardStep = 1;
             }
             const navItems = this.container.querySelectorAll('.liventra-sidebar-nav a');
             navItems.forEach(item => {
@@ -202,7 +217,6 @@
             }
         }
 
-        /* 🏠 Home Overview Screen */
         renderHomeView() {
             return `
                 <div class="liventra-metrics-grid">
@@ -231,7 +245,7 @@
                 <div class="liventra-card" style="margin-top: 24px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
                         <h3 style="margin:0; font-size:16px; color:var(--lv-text);">🎥 Active Automated Webinars</h3>
-                        <button class="liventra-btn liventra-btn-primary" onclick="window.liventraApp.switchNav('create')">+ Build New Webinar</button>
+                        <button class="liventra-btn liventra-btn-primary btn-trigger-create">+ Build New Webinar</button>
                     </div>
                     <table style="width:100%; border-collapse:collapse; font-size:13px; color:var(--lv-text);">
                         <thead>
@@ -253,7 +267,7 @@
                                     <td style="padding:12px;">${w.attendees}</td>
                                     <td style="padding:12px; color:var(--lv-success); font-weight:600;">${w.revenue}</td>
                                     <td style="padding:12px;">
-                                        <button class="liventra-btn liventra-btn-secondary" style="padding:4px 10px; font-size:11px;" onclick="window.liventraApp.switchNav('create')">Edit Flow</button>
+                                        <button class="liventra-btn liventra-btn-secondary btn-trigger-create" style="padding:4px 10px; font-size:11px;">Edit Flow</button>
                                     </td>
                                 </tr>
                             `).join('')}
@@ -263,12 +277,11 @@
             `;
         }
 
-        /* 🎥 My Webinars Catalog Screen */
         renderMyWebinarsView() {
             return `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                     <h3 style="margin:0; font-size:18px; color:var(--lv-text);">🎥 All Managed Webinars</h3>
-                    <button class="liventra-btn liventra-btn-primary" onclick="window.liventraApp.switchNav('create')">+ Create Webinar</button>
+                    <button class="liventra-btn liventra-btn-primary btn-trigger-create">+ Create Webinar</button>
                 </div>
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:16px;">
                     ${this.webinars.map(w => `
@@ -279,7 +292,7 @@
                             </div>
                             <p style="margin:0 0 16px 0; font-size:12px; color:var(--lv-text-muted);">Provider: ${w.provider} | Watch Time: ${w.watchTime}</p>
                             <div style="display:flex; gap:8px;">
-                                <button class="liventra-btn liventra-btn-primary" style="font-size:11px; padding:6px 12px;" onclick="window.liventraApp.switchNav('create')">Edit Wizard</button>
+                                <button class="liventra-btn liventra-btn-primary btn-trigger-create" style="font-size:11px; padding:6px 12px;">Edit Wizard</button>
                                 <button class="liventra-btn liventra-btn-secondary" style="font-size:11px; padding:6px 12px;" onclick="alert('Duplicated ${w.title}!')">Duplicate</button>
                             </div>
                         </div>
@@ -288,7 +301,6 @@
             `;
         }
 
-        /* ➕ Guided 8-Step Webinar Builder Wizard Screen */
         renderWizardView() {
             const steps = [
                 { num: 1, name: 'Basic Info' },
@@ -495,7 +507,6 @@
             }
         }
 
-        /* 👥 Contacts & Registrants View */
         renderContactsView() {
             return `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -534,7 +545,6 @@
             `;
         }
 
-        /* 📊 Analytics View */
         renderAnalyticsView() {
             return `
                 <div class="liventra-metrics-grid">
@@ -557,7 +567,6 @@
             `;
         }
 
-        /* ⚙️ Settings View */
         renderSettingsView() {
             return `
                 <div class="liventra-card">
@@ -580,14 +589,14 @@
                     <div class="liventra-modal" style="width: 720px;">
                         <div class="liventra-modal-header">
                             <h3>👁️ Liventra Live Session Preview</h3>
-                            <button class="liventra-modal-close" onclick="document.getElementById('liventra-modal-root').innerHTML=''">&times;</button>
+                            <button class="liventra-modal-close">&times;</button>
                         </div>
                         <div style="background:#000; border-radius:8px; height:320px; display:flex; align-items:center; justify-content:center; color:var(--lv-text-muted);">
                             🎥 [Live Session Preview Renderer Active — 04:15 Elapsed]
                         </div>
                         <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center;">
                             <span class="liventra-badge liventra-badge-success">Session Status: Synced</span>
-                            <button class="liventra-btn liventra-btn-secondary" onclick="document.getElementById('liventra-modal-root').innerHTML=''">Close Preview</button>
+                            <button class="liventra-btn liventra-btn-secondary liventra-modal-close">Close Preview</button>
                         </div>
                     </div>
                 </div>
@@ -630,23 +639,32 @@
 
     window.LiventraAdminStudio = LiventraAdminStudio;
 
-    // Bulletproof Auto-Mount Engine
-    function autoMount() {
-        const containers = [
-            document.getElementById('liventra-admin-studio'),
-            document.querySelector('.liventra-admin-studio')
-        ];
-        containers.forEach(container => {
-            if (container && !container.dataset.mounted) {
-                container.dataset.mounted = 'true';
-                window.liventraApp = new LiventraAdminStudio({ containerId: container.id || 'liventra-admin-studio' });
+    // Retrying Mount Engine (Fires immediately & polls every 50ms to ensure mounting even if scripts are deferred)
+    function startMountEngine() {
+        let attempts = 0;
+        const interval = setInterval(() => {
+            attempts++;
+            const containers = [
+                document.getElementById('liventra-admin-studio'),
+                document.querySelector('.liventra-admin-studio')
+            ];
+            let mountedAny = false;
+            containers.forEach(container => {
+                if (container && !container.dataset.mounted) {
+                    container.dataset.mounted = 'true';
+                    window.liventraApp = new LiventraAdminStudio({ containerId: container.id || 'liventra-admin-studio' });
+                    mountedAny = true;
+                }
+            });
+            if (mountedAny || attempts > 100) {
+                clearInterval(interval);
             }
-        });
+        }, 50);
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', autoMount);
+        document.addEventListener('DOMContentLoaded', startMountEngine);
     } else {
-        autoMount();
+        startMountEngine();
     }
-})(window);
+})(window, document);

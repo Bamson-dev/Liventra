@@ -118,7 +118,7 @@ class WebinarModule implements ModuleInterface {
 		echo '<div class="wrap">';
 		echo '<h1>' . esc_html__( 'Liventra Admin Studio & Visual Webinar Builder', 'liventra' ) . '</h1>';
 		echo '<div id="liventra-admin-studio"></div>';
-		echo '<script>(function(){ function init(){ if(window.LiventraAdminStudio){ new window.LiventraAdminStudio({ containerId: "liventra-admin-studio" }); } } if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded", init); } else { init(); } })();</script>';
+		echo '<script>(function(){ var count=0; var inv=setInterval(function(){ count++; var el=document.getElementById("liventra-admin-studio"); if(window.LiventraAdminStudio && el && !el.dataset.mounted){ el.dataset.mounted="true"; window.liventraApp=new window.LiventraAdminStudio({ containerId: "liventra-admin-studio" }); clearInterval(inv); } if(count>100){ clearInterval(inv); } }, 50); })();</script>';
 		echo '</div>';
 	}
 
@@ -126,7 +126,7 @@ class WebinarModule implements ModuleInterface {
 		echo '<div class="wrap">';
 		echo '<h1>' . esc_html__( 'Enterprise Organizations & Workspaces', 'liventra' ) . '</h1>';
 		echo '<div id="liventra-org-manager"></div>';
-		echo '<script>(function(){ function init(){ if(window.LiventraOrganizationManager){ new window.LiventraOrganizationManager({ containerId: "liventra-org-manager" }); } } if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded", init); } else { init(); } })();</script>';
+		echo '<script>(function(){ var count=0; var inv=setInterval(function(){ count++; var el=document.getElementById("liventra-org-manager"); if(window.LiventraOrganizationManager && el && !el.dataset.mounted){ el.dataset.mounted="true"; new window.LiventraOrganizationManager({ containerId: "liventra-org-manager" }); clearInterval(inv); } if(count>100){ clearInterval(inv); } }, 50); })();</script>';
 		echo '</div>';
 	}
 
@@ -134,7 +134,7 @@ class WebinarModule implements ModuleInterface {
 		echo '<div class="wrap">';
 		echo '<h1>' . esc_html__( 'Plugin SDK & Marketplace Catalog', 'liventra' ) . '</h1>';
 		echo '<div id="liventra-plugin-manager"></div>';
-		echo '<script>(function(){ function init(){ if(window.LiventraPluginManager){ new window.LiventraPluginManager({ containerId: "liventra-plugin-manager" }); } } if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded", init); } else { init(); } })();</script>';
+		echo '<script>(function(){ var count=0; var inv=setInterval(function(){ count++; var el=document.getElementById("liventra-plugin-manager"); if(window.LiventraPluginManager && el && !el.dataset.mounted){ el.dataset.mounted="true"; new window.LiventraPluginManager({ containerId: "liventra-plugin-manager" }); clearInterval(inv); } if(count>100){ clearInterval(inv); } }, 50); })();</script>';
 		echo '</div>';
 	}
 
@@ -142,7 +142,7 @@ class WebinarModule implements ModuleInterface {
 		echo '<div class="wrap">';
 		echo '<h1>' . esc_html__( 'Operations, Health & Observability', 'liventra' ) . '</h1>';
 		echo '<div id="liventra-operations-dashboard"></div>';
-		echo '<script>(function(){ function init(){ if(window.LiventraOperationsDashboard){ new window.LiventraOperationsDashboard({ containerId: "liventra-operations-dashboard" }); } } if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded", init); } else { init(); } })();</script>';
+		echo '<script>(function(){ var count=0; var inv=setInterval(function(){ count++; var el=document.getElementById("liventra-operations-dashboard"); if(window.LiventraOperationsDashboard && el && !el.dataset.mounted){ el.dataset.mounted="true"; new window.LiventraOperationsDashboard({ containerId: "liventra-operations-dashboard" }); clearInterval(inv); } if(count>100){ clearInterval(inv); } }, 50); })();</script>';
 		echo '</div>';
 	}
 
@@ -150,7 +150,7 @@ class WebinarModule implements ModuleInterface {
 		echo '<div class="wrap">';
 		echo '<h1>' . esc_html__( 'Performance, Scalability & Capacity Dashboard', 'liventra' ) . '</h1>';
 		echo '<div id="liventra-performance-dashboard"></div>';
-		echo '<script>(function(){ function init(){ if(window.LiventraPerformanceDashboard){ new window.LiventraPerformanceDashboard({ containerId: "liventra-performance-dashboard" }); } } if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded", init); } else { init(); } })();</script>';
+		echo '<script>(function(){ var count=0; var inv=setInterval(function(){ count++; var el=document.getElementById("liventra-performance-dashboard"); if(window.LiventraPerformanceDashboard && el && !el.dataset.mounted){ el.dataset.mounted="true"; new window.LiventraPerformanceDashboard({ containerId: "liventra-performance-dashboard" }); clearInterval(inv); } if(count>100){ clearInterval(inv); } }, 50); })();</script>';
 		echo '</div>';
 	}
 }
