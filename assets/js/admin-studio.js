@@ -219,6 +219,31 @@
                     return;
                 }
 
+                // Edit Webinar Trigger
+                if (target.classList.contains('btn-edit-webinar')) {
+                    e.preventDefault();
+                    const webId = parseInt(target.getAttribute('data-webinar-id'), 10);
+                    app.editWebinar(webId);
+                    return;
+                }
+
+                // Add Chat Message Trigger
+                if (target.id === 'btn-trigger-add-chat') {
+                    e.preventDefault();
+                    app.openAddChatModal();
+                    return;
+                }
+
+                // Delete Chat Message Trigger
+                if (target.classList.contains('btn-delete-chat')) {
+                    e.preventDefault();
+                    const chatId = parseInt(target.getAttribute('data-chat-id'), 10);
+                    app.wizardDraft.chatMessages = app.wizardDraft.chatMessages.filter(m => m.id !== chatId);
+                    app.showToast('Chat Message Removed');
+                    app.renderMainContent();
+                    return;
+                }
+
                 // Duplicate Webinar Trigger
                 if (target.classList.contains('btn-duplicate-webinar')) {
                     e.preventDefault();
@@ -432,6 +457,63 @@
                     </div>
                 `}
             `;
+        }
+
+        editWebinar(webinarId) {
+            const target = this.webinars.find(w => w.id === webinarId);
+            if (target) {
+                this.wizardDraft.title = target.title;
+            }
+            this.wizardStep = 1;
+            this.switchNav('create');
+        }
+
+        openAddChatModal() {
+            const root = document.getElementById('liventra-modal-root');
+            if (!root) return;
+            root.innerHTML = `
+                <div class="liventra-modal-backdrop">
+                    <div class="liventra-modal">
+                        <div class="liventra-modal-header">
+                            <h3>💬 Add Scripted Chat Message</h3>
+                            <button class="liventra-modal-close">&times;</button>
+                        </div>
+                        <div class="liventra-form-group">
+                            <label>Author / Speaker Name</label>
+                            <input type="text" id="modal-chat-author" class="liventra-input" value="Host Bamidele" />
+                        </div>
+                        <div class="liventra-form-group">
+                            <label>Message Content</label>
+                            <input type="text" id="modal-chat-text" class="liventra-input" placeholder="e.g. Type your questions in the box below!" />
+                        </div>
+                        <div class="liventra-form-group">
+                            <label>Trigger Time (mm:ss)</label>
+                            <input type="text" id="modal-chat-time" class="liventra-input" value="05:30" />
+                        </div>
+                        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+                            <button class="liventra-btn liventra-btn-secondary liventra-modal-close">Cancel</button>
+                            <button id="btn-save-modal-chat" class="liventra-btn liventra-btn-primary">Save Message</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('btn-save-modal-chat').addEventListener('click', () => {
+                const author = document.getElementById('modal-chat-author').value || 'Attendee';
+                const text = document.getElementById('modal-chat-text').value || 'Great webinar!';
+                const time = document.getElementById('modal-chat-time').value || '05:30';
+
+                this.wizardDraft.chatMessages.push({
+                    id: Date.now(),
+                    author: author,
+                    text: text,
+                    time: time
+                });
+
+                root.innerHTML = '';
+                this.showToast('✓ Chat Message Added');
+                this.renderMainContent();
+            });
         }
 
         duplicateWebinar(webinarId) {
