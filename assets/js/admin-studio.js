@@ -207,6 +207,22 @@
                     return;
                 }
 
+                // Duplicate Webinar Trigger
+                if (target.classList.contains('btn-duplicate-webinar')) {
+                    e.preventDefault();
+                    const webId = parseInt(target.getAttribute('data-webinar-id'), 10);
+                    app.duplicateWebinar(webId);
+                    return;
+                }
+
+                // Delete Webinar Trigger
+                if (target.classList.contains('btn-delete-webinar')) {
+                    e.preventDefault();
+                    const webId = parseInt(target.getAttribute('data-webinar-id'), 10);
+                    app.deleteWebinar(webId);
+                    return;
+                }
+
                 // Modal Close Button
                 if (target.classList.contains('liventra-modal-close')) {
                     e.preventDefault();
@@ -328,6 +344,7 @@
                                     <td style="padding:12px; color:var(--lv-success); font-weight:600;">${w.revenue}</td>
                                     <td style="padding:12px;">
                                         <button class="liventra-btn liventra-btn-secondary btn-trigger-create" style="padding:4px 10px; font-size:11px;">Edit Wizard</button>
+                                        <button class="liventra-btn liventra-btn-secondary btn-duplicate-webinar" data-webinar-id="${w.id}" style="padding:4px 10px; font-size:11px;">Duplicate</button>
                                     </td>
                                 </tr>
                             `).join('')}
@@ -353,12 +370,37 @@
                             <p style="margin:0 0 16px 0; font-size:12px; color:var(--lv-text-muted);">Provider: ${w.provider} | Watch Time: ${w.watchTime}</p>
                             <div style="display:flex; gap:8px;">
                                 <button class="liventra-btn liventra-btn-primary btn-trigger-create" style="font-size:11px; padding:6px 12px;">Edit Wizard</button>
-                                <button class="liventra-btn liventra-btn-secondary" style="font-size:11px; padding:6px 12px;" onclick="alert('Duplicated ${w.title}!')">Duplicate</button>
+                                <button class="liventra-btn liventra-btn-secondary btn-duplicate-webinar" data-webinar-id="${w.id}" style="font-size:11px; padding:6px 12px;">Duplicate</button>
+                                <button class="liventra-btn liventra-btn-danger btn-delete-webinar" data-webinar-id="${w.id}" style="font-size:11px; padding:6px 12px;">Delete</button>
                             </div>
                         </div>
                     `).join('')}
                 </div>
             `;
+        }
+
+        duplicateWebinar(webinarId) {
+            const target = this.webinars.find(w => w.id === webinarId);
+            if (!target) return;
+            const newId = Date.now();
+            const clone = {
+                id: newId,
+                title: target.title + ' (Copy)',
+                status: 'draft',
+                attendees: 0,
+                revenue: '$0',
+                watchTime: '0m',
+                provider: target.provider
+            };
+            this.webinars.unshift(clone);
+            this.showToast('✓ Duplicated Webinar: ' + clone.title);
+            this.renderMainContent();
+        }
+
+        deleteWebinar(webinarId) {
+            this.webinars = this.webinars.filter(w => w.id !== webinarId);
+            this.showToast('✓ Deleted Webinar');
+            this.renderMainContent();
         }
 
         /* ➕ Guided 7-Step Webinar Builder Wizard Screen (No Email Step) */
