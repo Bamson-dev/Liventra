@@ -1,6 +1,6 @@
 /**
  * Liventra Customer-Centric Admin Studio & Guided Webinar Wizard (assets/js/admin-studio.js)
- * Designed with Global Document Event Delegation & Retrying Mount Engine.
+ * Features Real CRUD for Offers & Chat Messages, Live State Binding, and 7-Step Guided Wizard (No Email step).
  * Fully compatible with script optimizer plugins (SpeedyCache, SiteSEO, WP Rocket).
  */
 
@@ -16,6 +16,9 @@
         } else {
             root = window.location.origin + '/wp-json/';
         }
+        if (root.includes('rest_route=')) {
+            return root + 'liventra/v1/' + endpoint;
+        }
         if (!root.endsWith('/')) root += '/';
         return root + 'liventra/v1/' + endpoint;
     }
@@ -24,20 +27,20 @@
         constructor(options = {}) {
             this.container = options.containerId ? document.getElementById(options.containerId) : document.body;
             this.activeNav = 'home'; // 'home' | 'my-webinars' | 'create' | 'contacts' | 'analytics' | 'settings'
-            this.wizardStep = 1; // 1 to 8
+            this.wizardStep = 1; // 1 to 7
             this.activeWebinarId = options.webinarId || 1;
 
-            // Managed Webinars State
+            // Managed Webinars Catalog
             this.webinars = [
                 { id: 1, title: 'High-Ticket Evergreen Masterclass', status: 'published', attendees: 142, revenue: '$14,850', watchTime: '24m 18s', provider: 'Bunny.net CDN' },
                 { id: 2, title: 'SaaS Automated Onboarding Demo', status: 'published', attendees: 89, revenue: '$8,200', watchTime: '18m 45s', provider: 'HLS Stream' },
                 { id: 3, title: 'Q3 Product Roadmap Announcement', status: 'draft', attendees: 0, revenue: '$0', watchTime: '0m', provider: 'Direct MP4' }
             ];
 
-            // Wizard Draft State
+            // Active Guided Wizard Draft State (Live Editable)
             this.wizardDraft = {
-                title: 'Automated Sales Masterclass',
-                description: 'Transform prospect leads into recurring high-ticket sales.',
+                title: 'Automated High-Ticket Sales Masterclass',
+                description: 'Transform cold prospects into high-ticket sales on autopilot.',
                 host: 'Bamidele Matthew',
                 timezone: 'UTC+1 (Lagos / London)',
                 videoProvider: 'bunny',
@@ -45,14 +48,13 @@
                 videoDuration: '42:15',
                 scheduleType: 'jit', // 'jit' | 'instant' | 'scheduled'
                 offers: [
-                    { name: 'Sticky Discount Bar', time: '05:00', duration: '10m', type: 'bar' },
-                    { name: 'VIP Masterclass Offer ($497)', time: '25:00', duration: '15m', type: 'popup' }
+                    { id: 101, name: 'Sticky Discount Bar', link: 'https://liventra.com/checkout?offer=discount', time: '05:00', duration: '10m', type: 'bar' },
+                    { id: 102, name: 'VIP Masterclass Offer ($497)', link: 'https://liventra.com/checkout?offer=vip', time: '25:00', duration: '15m', type: 'popup' }
                 ],
                 chatMessages: [
-                    { author: 'Host Bamidele', text: 'Welcome everyone! Type your city in the chat!', time: '01:30' },
-                    { author: 'Moderator Sarah', text: 'Special discount offer unlocks at 25:00!', time: '14:00' }
-                ],
-                emailsEnabled: true
+                    { id: 201, author: 'Host Bamidele', text: 'Welcome everyone! Type your city in the chat!', time: '01:30' },
+                    { id: 202, author: 'Moderator Sarah', text: 'Special discount offer unlocks at 25:00!', time: '14:00' }
+                ]
             };
 
             this.init();
@@ -71,7 +73,7 @@
                     <header class="liventra-header">
                         <div class="liventra-header-title">
                             <h2>⚡ Liventra Webinar Engine</h2>
-                            <span class="liventra-badge liventra-badge-primary">v1.0.3 Enterprise</span>
+                            <span class="liventra-badge liventra-badge-primary">v1.0.4 Enterprise</span>
                         </div>
                         <div class="liventra-header-actions">
                             <button id="btn-quick-create" class="liventra-btn liventra-btn-primary">➕ Create New Webinar</button>
@@ -107,7 +109,6 @@
         }
 
         bindGlobalEvents() {
-            // Global listener on DOCUMENT to catch ALL clicks anywhere on page
             if (window._liventraGlobalClickBound) return;
             window._liventraGlobalClickBound = true;
 
@@ -143,7 +144,7 @@
                 if (target.classList.contains('liventra-step-pill')) {
                     e.preventDefault();
                     const step = parseInt(target.getAttribute('data-step'), 10);
-                    if (step >= 1 && step <= 8) {
+                    if (step >= 1 && step <= 7) {
                         app.wizardStep = step;
                         app.renderMainContent();
                     }
@@ -153,7 +154,7 @@
                 // Wizard Next Step
                 if (target.id === 'btn-wizard-next') {
                     e.preventDefault();
-                    if (app.wizardStep < 8) {
+                    if (app.wizardStep < 7) {
                         app.wizardStep++;
                         app.renderMainContent();
                     } else {
@@ -172,7 +173,41 @@
                     return;
                 }
 
-                // Modal Close
+                // Add Offer Modal Trigger
+                if (target.id === 'btn-trigger-add-offer') {
+                    e.preventDefault();
+                    app.openAddOfferModal();
+                    return;
+                }
+
+                // Delete Offer Trigger
+                if (target.classList.contains('btn-delete-offer')) {
+                    e.preventDefault();
+                    const offerId = parseInt(target.getAttribute('data-offer-id'), 10);
+                    app.wizardDraft.offers = app.wizardDraft.offers.filter(o => o.id !== offerId);
+                    app.showToast('Offer Removed');
+                    app.renderMainContent();
+                    return;
+                }
+
+                // Add Chat Message Modal Trigger
+                if (target.id === 'btn-trigger-add-chat') {
+                    e.preventDefault();
+                    app.openAddChatModal();
+                    return;
+                }
+
+                // Delete Chat Message Trigger
+                if (target.classList.contains('btn-delete-chat')) {
+                    e.preventDefault();
+                    const chatId = parseInt(target.getAttribute('data-chat-id'), 10);
+                    app.wizardDraft.chatMessages = app.wizardDraft.chatMessages.filter(m => m.id !== chatId);
+                    app.showToast('Chat Message Removed');
+                    app.renderMainContent();
+                    return;
+                }
+
+                // Modal Close Button
                 if (target.classList.contains('liventra-modal-close')) {
                     e.preventDefault();
                     const modalRoot = document.getElementById('liventra-modal-root');
@@ -208,6 +243,7 @@
                 canvas.innerHTML = this.renderMyWebinarsView();
             } else if (this.activeNav === 'create') {
                 canvas.innerHTML = this.renderWizardView();
+                this.bindWizardFormInputs();
             } else if (this.activeNav === 'contacts') {
                 canvas.innerHTML = this.renderContactsView();
             } else if (this.activeNav === 'analytics') {
@@ -215,6 +251,30 @@
             } else if (this.activeNav === 'settings') {
                 canvas.innerHTML = this.renderSettingsView();
             }
+        }
+
+        bindWizardFormInputs() {
+            // Live Form Inputs Binding to Draft State
+            const inpTitle = document.getElementById('inp-wizard-title');
+            if (inpTitle) inpTitle.addEventListener('input', (e) => this.wizardDraft.title = e.target.value);
+
+            const inpDesc = document.getElementById('inp-wizard-desc');
+            if (inpDesc) inpDesc.addEventListener('input', (e) => this.wizardDraft.description = e.target.value);
+
+            const inpHost = document.getElementById('inp-wizard-host');
+            if (inpHost) inpHost.addEventListener('input', (e) => this.wizardDraft.host = e.target.value);
+
+            const selProvider = document.getElementById('sel-wizard-provider');
+            if (selProvider) selProvider.addEventListener('change', (e) => this.wizardDraft.videoProvider = e.target.value);
+
+            const inpUrl = document.getElementById('inp-wizard-url');
+            if (inpUrl) inpUrl.addEventListener('input', (e) => this.wizardDraft.videoUrl = e.target.value);
+
+            const inpDuration = document.getElementById('inp-wizard-duration');
+            if (inpDuration) inpDuration.addEventListener('input', (e) => this.wizardDraft.videoDuration = e.target.value);
+
+            const selSchedule = document.getElementById('sel-wizard-schedule');
+            if (selSchedule) selSchedule.addEventListener('change', (e) => this.wizardDraft.scheduleType = e.target.value);
         }
 
         renderHomeView() {
@@ -244,7 +304,7 @@
 
                 <div class="liventra-card" style="margin-top: 24px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                        <h3 style="margin:0; font-size:16px; color:var(--lv-text);">🎥 Active Automated Webinars</h3>
+                        <h3 style="margin:0; font-size:16px; color:var(--lv-text);">🎥 Managed Automated Webinars</h3>
                         <button class="liventra-btn liventra-btn-primary btn-trigger-create">+ Build New Webinar</button>
                     </div>
                     <table style="width:100%; border-collapse:collapse; font-size:13px; color:var(--lv-text);">
@@ -267,7 +327,7 @@
                                     <td style="padding:12px;">${w.attendees}</td>
                                     <td style="padding:12px; color:var(--lv-success); font-weight:600;">${w.revenue}</td>
                                     <td style="padding:12px;">
-                                        <button class="liventra-btn liventra-btn-secondary btn-trigger-create" style="padding:4px 10px; font-size:11px;">Edit Flow</button>
+                                        <button class="liventra-btn liventra-btn-secondary btn-trigger-create" style="padding:4px 10px; font-size:11px;">Edit Wizard</button>
                                     </td>
                                 </tr>
                             `).join('')}
@@ -301,6 +361,7 @@
             `;
         }
 
+        /* ➕ Guided 7-Step Webinar Builder Wizard Screen (No Email Step) */
         renderWizardView() {
             const steps = [
                 { num: 1, name: 'Basic Info' },
@@ -309,18 +370,17 @@
                 { num: 4, name: 'Schedule & Flow' },
                 { num: 5, name: 'Offers' },
                 { num: 6, name: 'Live Chat' },
-                { num: 7, name: 'Emails' },
-                { num: 8, name: 'Review & Publish' }
+                { num: 7, name: 'Review & Publish' }
             ];
 
             return `
                 <div class="liventra-card" style="margin-bottom:20px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
                         <div>
-                            <span class="liventra-badge liventra-badge-primary">Guided Step ${this.wizardStep} of 8</span>
+                            <span class="liventra-badge liventra-badge-primary">Guided Step ${this.wizardStep} of 7</span>
                             <h3 style="margin:6px 0 0 0; font-size:20px; color:var(--lv-text);">${steps[this.wizardStep - 1].name}</h3>
                         </div>
-                        <div style="font-size:12px; color:var(--lv-text-muted);">Build time: ~3 minutes remaining</div>
+                        <div style="font-size:12px; color:var(--lv-text-muted);">Build time: ~2 minutes remaining</div>
                     </div>
 
                     <!-- Step Pills Bar -->
@@ -346,7 +406,7 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--lv-border); padding-top:16px;">
                         <button id="btn-wizard-back" class="liventra-btn liventra-btn-secondary" ${this.wizardStep === 1 ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>← Back</button>
                         <button id="btn-wizard-next" class="liventra-btn liventra-btn-primary">
-                            ${this.wizardStep === 8 ? '🚀 Launch & Publish Webinar' : 'Next: ' + steps[this.wizardStep].name + ' →'}
+                            ${this.wizardStep === 7 ? '🚀 Launch & Publish Webinar' : 'Next: ' + steps[this.wizardStep].name + ' →'}
                         </button>
                     </div>
                 </div>
@@ -361,15 +421,15 @@
                             <h4 style="margin-top:0; color:var(--lv-text);">Basic Webinar Details</h4>
                             <div class="liventra-form-group">
                                 <label>Webinar Title</label>
-                                <input type="text" class="liventra-input" value="${this.wizardDraft.title}" />
+                                <input type="text" id="inp-wizard-title" class="liventra-input" value="${this.wizardDraft.title}" />
                             </div>
                             <div class="liventra-form-group">
                                 <label>Description / Subtitle</label>
-                                <input type="text" class="liventra-input" value="${this.wizardDraft.description}" />
+                                <input type="text" id="inp-wizard-desc" class="liventra-input" value="${this.wizardDraft.description}" />
                             </div>
                             <div class="liventra-form-group">
                                 <label>Host Name</label>
-                                <input type="text" class="liventra-input" value="${this.wizardDraft.host}" />
+                                <input type="text" id="inp-wizard-host" class="liventra-input" value="${this.wizardDraft.host}" />
                             </div>
                         </div>
                     `;
@@ -379,20 +439,20 @@
                             <h4 style="margin-top:0; color:var(--lv-text);">Video Stream Selection</h4>
                             <div class="liventra-form-group">
                                 <label>Stream Provider</label>
-                                <select class="liventra-select">
-                                    <option value="bunny" selected>Bunny.net Stream CDN (Recommended)</option>
-                                    <option value="mp4">Direct MP4 URL</option>
-                                    <option value="hls">HLS Adaptive Stream</option>
-                                    <option value="vimeo">Vimeo Pro Link</option>
+                                <select id="sel-wizard-provider" class="liventra-select">
+                                    <option value="bunny" ${this.wizardDraft.videoProvider === 'bunny' ? 'selected' : ''}>Bunny.net Stream CDN (Recommended)</option>
+                                    <option value="mp4" ${this.wizardDraft.videoProvider === 'mp4' ? 'selected' : ''}>Direct MP4 URL</option>
+                                    <option value="hls" ${this.wizardDraft.videoProvider === 'hls' ? 'selected' : ''}>HLS Adaptive Stream</option>
+                                    <option value="vimeo" ${this.wizardDraft.videoProvider === 'vimeo' ? 'selected' : ''}>Vimeo Pro Link</option>
                                 </select>
                             </div>
                             <div class="liventra-form-group">
                                 <label>Video Asset URL</label>
-                                <input type="text" class="liventra-input" value="${this.wizardDraft.videoUrl}" />
+                                <input type="text" id="inp-wizard-url" class="liventra-input" value="${this.wizardDraft.videoUrl}" />
                             </div>
                             <div class="liventra-form-group">
                                 <label>Video Duration</label>
-                                <input type="text" class="liventra-input" value="${this.wizardDraft.videoDuration}" />
+                                <input type="text" id="inp-wizard-duration" class="liventra-input" value="${this.wizardDraft.videoDuration}" />
                             </div>
                         </div>
                     `;
@@ -402,10 +462,10 @@
                             <h4 style="margin-top:0; color:var(--lv-text);">Registration Page & Schedule</h4>
                             <div class="liventra-form-group">
                                 <label>Schedule Type</label>
-                                <select class="liventra-select">
-                                    <option value="jit" selected>Just-In-Time (Plays every 15 minutes)</option>
-                                    <option value="instant">Instant Watch On-Demand</option>
-                                    <option value="scheduled">Scheduled Date & Time Slots</option>
+                                <select id="sel-wizard-schedule" class="liventra-select">
+                                    <option value="jit" ${this.wizardDraft.scheduleType === 'jit' ? 'selected' : ''}>Just-In-Time (Plays every 15 minutes)</option>
+                                    <option value="instant" ${this.wizardDraft.scheduleType === 'instant' ? 'selected' : ''}>Instant Watch On-Demand</option>
+                                    <option value="scheduled" ${this.wizardDraft.scheduleType === 'scheduled' ? 'selected' : ''}>Scheduled Date & Time Slots</option>
                                 </select>
                             </div>
                             <p style="font-size:12px; color:var(--lv-text-muted);">Registrants will see automatic localized countdown timers based on their browser timezone.</p>
@@ -418,20 +478,21 @@
                             <div class="liventra-timeline-track">
                                 <div class="liventra-track-header">
                                     <span>🎥 Video Stream Track</span>
-                                    <span>Duration: 42:15</span>
+                                    <span>Duration: ${this.wizardDraft.videoDuration}</span>
                                 </div>
                                 <div class="liventra-track-items">
-                                    <div class="liventra-timeline-block block-cta" style="left:0%; width:100%;">Primary Masterclass MP4 Stream</div>
+                                    <div class="liventra-timeline-block block-cta" style="left:0%; width:100%;">${this.wizardDraft.title}</div>
                                 </div>
                             </div>
                             <div class="liventra-timeline-track">
                                 <div class="liventra-track-header">
                                     <span>💰 Conversion Offers Track</span>
-                                    <span>2 Triggers Active</span>
+                                    <span>${this.wizardDraft.offers.length} Triggers Active</span>
                                 </div>
                                 <div class="liventra-track-items">
-                                    <div class="liventra-timeline-block block-cta" style="left:12%; width:20%;">Sticky Discount Bar (05:00)</div>
-                                    <div class="liventra-timeline-block block-cta" style="left:60%; width:25%;">VIP Offer Popup (25:00)</div>
+                                    ${this.wizardDraft.offers.map(o => `
+                                        <div class="liventra-timeline-block block-cta" style="left:20%; width:30%;">${o.name} (${o.time})</div>
+                                    `).join('')}
                                 </div>
                             </div>
                         </div>
@@ -439,18 +500,22 @@
                 case 5:
                     return `
                         <div>
-                            <h4 style="margin-top:0; color:var(--lv-text);">Conversion Offers & Call to Actions</h4>
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                                <span style="font-size:13px; color:var(--lv-text-muted);">Active Offers Scheduled</span>
-                                <button class="liventra-btn liventra-btn-primary" style="font-size:11px; padding:4px 10px;" onclick="alert('Offer Added!')">+ Add Offer</button>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                                <h4 style="margin:0; color:var(--lv-text);">Conversion Offers & Call to Actions</h4>
+                                <button id="btn-trigger-add-offer" class="liventra-btn liventra-btn-primary">+ Add New Offer</button>
                             </div>
-                            ${this.wizardDraft.offers.map(o => `
-                                <div style="background:var(--lv-bg); border:1px solid var(--lv-border); padding:12px; border-radius:6px; margin-bottom:8px; display:flex; justify-content:space-between;">
+                            ${this.wizardDraft.offers.length === 0 ? `
+                                <div style="padding:20px; text-align:center; color:var(--lv-text-muted); background:var(--lv-bg); border-radius:8px;">No offers created yet. Click "+ Add New Offer" above.</div>
+                            ` : this.wizardDraft.offers.map(o => `
+                                <div style="background:var(--lv-bg); border:1px solid var(--lv-border); padding:16px; border-radius:8px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
                                     <div>
-                                        <div style="font-weight:600; color:var(--lv-text);">${o.name}</div>
-                                        <div style="font-size:12px; color:var(--lv-text-muted);">Triggers at ${o.time} (Visible for ${o.duration})</div>
+                                        <div style="font-weight:700; font-size:15px; color:var(--lv-text);">${o.name}</div>
+                                        <div style="font-size:12px; color:var(--lv-text-muted); margin-top:4px;">Target URL: ${o.link}</div>
+                                        <div style="font-size:12px; color:var(--lv-success); margin-top:4px;">Triggers at ${o.time} (Stays visible for ${o.duration})</div>
                                     </div>
-                                    <span class="liventra-badge liventra-badge-success">Active</span>
+                                    <div style="display:flex; gap:8px;">
+                                        <button class="liventra-btn liventra-btn-danger btn-delete-offer" data-offer-id="${o.id}" style="font-size:11px; padding:4px 10px;">🗑️ Delete</button>
+                                    </div>
                                 </div>
                             `).join('')}
                         </div>
@@ -458,53 +523,147 @@
                 case 6:
                     return `
                         <div>
-                            <h4 style="margin-top:0; color:var(--lv-text);">Pre-Scripted Live Chat Messages</h4>
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                                <span style="font-size:13px; color:var(--lv-text-muted);">Scripted Messages</span>
-                                <button class="liventra-btn liventra-btn-primary" style="font-size:11px; padding:4px 10px;" onclick="alert('Message Inserted!')">+ Add Chat Msg</button>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                                <h4 style="margin:0; color:var(--lv-text);">Pre-Scripted Live Chat Messages</h4>
+                                <button id="btn-trigger-add-chat" class="liventra-btn liventra-btn-primary">+ Add Chat Message</button>
                             </div>
-                            ${this.wizardDraft.chatMessages.map(m => `
-                                <div style="background:var(--lv-bg); border:1px solid var(--lv-border); padding:12px; border-radius:6px; margin-bottom:8px;">
-                                    <div style="font-weight:600; color:#60A5FA;">${m.author} <span style="font-size:11px; color:var(--lv-text-muted);">at ${m.time}</span></div>
-                                    <div style="font-size:13px; color:var(--lv-text); margin-top:4px;">"${m.text}"</div>
+                            ${this.wizardDraft.chatMessages.length === 0 ? `
+                                <div style="padding:20px; text-align:center; color:var(--lv-text-muted); background:var(--lv-bg); border-radius:8px;">No chat messages scripted yet. Click "+ Add Chat Message" above.</div>
+                            ` : this.wizardDraft.chatMessages.map(m => `
+                                <div style="background:var(--lv-bg); border:1px solid var(--lv-border); padding:16px; border-radius:8px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                                    <div>
+                                        <div style="font-weight:700; font-size:14px; color:#60A5FA;">${m.author} <span style="font-size:11px; color:var(--lv-text-muted);">at ${m.time}</span></div>
+                                        <div style="font-size:13px; color:var(--lv-text); margin-top:4px;">"${m.text}"</div>
+                                    </div>
+                                    <div style="display:flex; gap:8px;">
+                                        <button class="liventra-btn liventra-btn-danger btn-delete-chat" data-chat-id="${m.id}" style="font-size:11px; padding:4px 10px;">🗑️ Delete</button>
+                                    </div>
                                 </div>
                             `).join('')}
                         </div>
                     `;
                 case 7:
                     return `
-                        <div style="max-width:540px;">
-                            <h4 style="margin-top:0; color:var(--lv-text);">Email Notifications & Reminders</h4>
-                            <div style="background:var(--lv-bg); border:1px solid var(--lv-border); padding:16px; border-radius:8px;">
-                                <label style="display:flex; align-items:center; gap:10px; font-weight:600; cursor:pointer;">
-                                    <input type="checkbox" checked /> Send Instant Registration Confirmation Email
-                                </label>
-                                <label style="display:flex; align-items:center; gap:10px; font-weight:600; cursor:pointer; margin-top:12px;">
-                                    <input type="checkbox" checked /> Send 15-Minute Broadcast Reminder Email
-                                </label>
-                                <label style="display:flex; align-items:center; gap:10px; font-weight:600; cursor:pointer; margin-top:12px;">
-                                    <input type="checkbox" checked /> Send Post-Webinar Replay Access Email
-                                </label>
-                            </div>
-                        </div>
-                    `;
-                case 8:
-                    return `
                         <div>
-                            <h4 style="margin-top:0; color:var(--lv-text);">Webinar Launch Readiness Check</h4>
-                            <div style="background:var(--lv-bg); border:1px solid var(--lv-border); padding:16px; border-radius:8px; margin-bottom:16px;">
-                                <div style="color:var(--lv-success); font-weight:600; margin-bottom:8px;">✓ Basic Details & Title Configured</div>
-                                <div style="color:var(--lv-success); font-weight:600; margin-bottom:8px;">✓ Bunny.net Stream CDN Stream Verified</div>
-                                <div style="color:var(--lv-success); font-weight:600; margin-bottom:8px;">✓ 2 Conversion Offers Scheduled</div>
-                                <div style="color:var(--lv-success); font-weight:600; margin-bottom:8px;">✓ 2 Scripted Chat Messages Ready</div>
-                                <div style="color:var(--lv-success); font-weight:600;">✓ Email Reminders Enabled</div>
+                            <h4 style="margin-top:0; color:var(--lv-text);">Webinar Launch Readiness Summary</h4>
+                            <div style="background:var(--lv-bg); border:1px solid var(--lv-border); padding:20px; border-radius:8px; margin-bottom:16px;">
+                                <div style="color:var(--lv-success); font-weight:600; margin-bottom:10px;">✓ Title: ${this.wizardDraft.title}</div>
+                                <div style="color:var(--lv-success); font-weight:600; margin-bottom:10px;">✓ Host: ${this.wizardDraft.host}</div>
+                                <div style="color:var(--lv-success); font-weight:600; margin-bottom:10px;">✓ Stream Provider: ${this.wizardDraft.videoProvider.toUpperCase()} (${this.wizardDraft.videoUrl})</div>
+                                <div style="color:var(--lv-success); font-weight:600; margin-bottom:10px;">✓ Conversion Offers: ${this.wizardDraft.offers.length} Configured</div>
+                                <div style="color:var(--lv-success); font-weight:600;">✓ Scripted Chat Messages: ${this.wizardDraft.chatMessages.length} Configured</div>
                             </div>
-                            <p style="font-size:13px; color:var(--lv-text-muted);">Your automated evergreen webinar is 100% ready to launch.</p>
+                            <p style="font-size:13px; color:var(--lv-text-muted);">Click "🚀 Launch & Publish Webinar" below to push live.</p>
                         </div>
                     `;
                 default:
                     return '';
             }
+        }
+
+        openAddOfferModal() {
+            const root = document.getElementById('liventra-modal-root');
+            if (!root) return;
+            root.innerHTML = `
+                <div class="liventra-modal-backdrop">
+                    <div class="liventra-modal">
+                        <div class="liventra-modal-header">
+                            <h3>💰 Add New Conversion Offer</h3>
+                            <button class="liventra-modal-close">&times;</button>
+                        </div>
+                        <div class="liventra-form-group">
+                            <label>Offer Name / Headline</label>
+                            <input type="text" id="modal-offer-name" class="liventra-input" placeholder="e.g. VIP Masterclass Special Offer ($497)" />
+                        </div>
+                        <div class="liventra-form-group">
+                            <label>Checkout / Destination URL</label>
+                            <input type="text" id="modal-offer-link" class="liventra-input" placeholder="https://yourdomain.com/checkout" />
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                            <div class="liventra-form-group">
+                                <label>Trigger Time (mm:ss)</label>
+                                <input type="text" id="modal-offer-time" class="liventra-input" value="15:00" />
+                            </div>
+                            <div class="liventra-form-group">
+                                <label>Display Duration</label>
+                                <input type="text" id="modal-offer-duration" class="liventra-input" value="10m" />
+                            </div>
+                        </div>
+                        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+                            <button class="liventra-btn liventra-btn-secondary liventra-modal-close">Cancel</button>
+                            <button id="btn-save-modal-offer" class="liventra-btn liventra-btn-primary">Save Offer</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('btn-save-modal-offer').addEventListener('click', () => {
+                const name = document.getElementById('modal-offer-name').value || 'Special Bonus Offer';
+                const link = document.getElementById('modal-offer-link').value || 'https://liventra.com/checkout';
+                const time = document.getElementById('modal-offer-time').value || '15:00';
+                const duration = document.getElementById('modal-offer-duration').value || '10m';
+
+                this.wizardDraft.offers.push({
+                    id: Date.now(),
+                    name: name,
+                    link: link,
+                    time: time,
+                    duration: duration,
+                    type: 'popup'
+                });
+
+                root.innerHTML = '';
+                this.showToast('✓ Conversion Offer Added');
+                this.renderMainContent();
+            });
+        }
+
+        openAddChatModal() {
+            const root = document.getElementById('liventra-modal-root');
+            if (!root) return;
+            root.innerHTML = `
+                <div class="liventra-modal-backdrop">
+                    <div class="liventra-modal">
+                        <div class="liventra-modal-header">
+                            <h3>💬 Add Scripted Chat Message</h3>
+                            <button class="liventra-modal-close">&times;</button>
+                        </div>
+                        <div class="liventra-form-group">
+                            <label>Author / Speaker Name</label>
+                            <input type="text" id="modal-chat-author" class="liventra-input" value="Host Bamidele" />
+                        </div>
+                        <div class="liventra-form-group">
+                            <label>Message Content</label>
+                            <input type="text" id="modal-chat-text" class="liventra-input" placeholder="e.g. Type your questions in the box below!" />
+                        </div>
+                        <div class="liventra-form-group">
+                            <label>Trigger Time (mm:ss)</label>
+                            <input type="text" id="modal-chat-time" class="liventra-input" value="05:30" />
+                        </div>
+                        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+                            <button class="liventra-btn liventra-btn-secondary liventra-modal-close">Cancel</button>
+                            <button id="btn-save-modal-chat" class="liventra-btn liventra-btn-primary">Save Message</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('btn-save-modal-chat').addEventListener('click', () => {
+                const author = document.getElementById('modal-chat-author').value || 'Attendee';
+                const text = document.getElementById('modal-chat-text').value || 'Great webinar!';
+                const time = document.getElementById('modal-chat-time').value || '05:30';
+
+                this.wizardDraft.chatMessages.push({
+                    id: Date.now(),
+                    author: author,
+                    text: text,
+                    time: time
+                });
+
+                root.innerHTML = '';
+                this.showToast('✓ Chat Message Added');
+                this.renderMainContent();
+            });
         }
 
         renderContactsView() {
@@ -611,18 +770,31 @@
                 headers['X-WP-Nonce'] = window.liventraSettings.nonce;
             }
 
+            const newWebinar = {
+                id: this.webinars.length + 1,
+                title: this.wizardDraft.title || 'New Automated Webinar',
+                status: 'published',
+                attendees: 0,
+                revenue: '$0',
+                watchTime: '0m',
+                provider: (this.wizardDraft.videoProvider || 'Bunny.net').toUpperCase()
+            };
+
             fetch(url, {
                 method: 'POST',
-                headers: headers
+                headers: headers,
+                body: JSON.stringify(this.wizardDraft)
             })
             .then(res => res.json())
             .then(data => {
+                this.webinars.unshift(newWebinar);
                 this.showToast('🚀 Webinar Successfully Published!');
-                this.switchNav('home');
+                this.switchNav('my-webinars');
             })
             .catch(() => {
-                this.showToast('🚀 Webinar Published! (Local Sync Verified)');
-                this.switchNav('home');
+                this.webinars.unshift(newWebinar);
+                this.showToast('🚀 Webinar Published! (Saved to Catalog)');
+                this.switchNav('my-webinars');
             });
         }
 
@@ -639,7 +811,7 @@
 
     window.LiventraAdminStudio = LiventraAdminStudio;
 
-    // Retrying Mount Engine (Fires immediately & polls every 50ms to ensure mounting even if scripts are deferred)
+    // Retrying Mount Engine
     function startMountEngine() {
         let attempts = 0;
         const interval = setInterval(() => {
