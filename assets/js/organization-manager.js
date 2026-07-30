@@ -32,8 +32,7 @@
                             <span class="liventra-badge liventra-badge-primary">${this.activeOrg}</span>
                         </div>
                         <div class="liventra-header-actions">
-                            <button id="btn-create-ws" class="liventra-btn liventra-btn-primary">+ Create Workspace</button>
-                            <button id="btn-invite-member" class="liventra-btn liventra-btn-secondary">✉️ Invite Member</button>
+                            <button id="btn-invite-member" class="liventra-btn liventra-btn-secondary">✉️ Invite Team Member</button>
                         </div>
                     </header>
                     <div style="padding:24px;">
@@ -70,12 +69,6 @@
                     </div>
                 </div>
             `;
-
-            const btnWs = this.container.querySelector('#btn-create-ws');
-            if (btnWs) btnWs.addEventListener('click', () => {
-                this.workspaces.push({ id: 'ws_' + Date.now(), name: 'New Regional Workspace', webinars: 0, status: 'isolated' });
-                this.render();
-            });
 
             const btnInv = this.container.querySelector('#btn-invite-member');
             if (btnInv) btnInv.addEventListener('click', () => alert('Invitation Sent to New Organization Member!'));
