@@ -175,6 +175,10 @@ class Plugin {
 			$sessionService = new \Liventra\Services\SessionService();
 			$sessionCtrl    = new \Liventra\REST\SessionController( $sessionService );
 			$sessionCtrl->register_routes();
+
+			$supabaseService = new \Liventra\Services\SupabaseService();
+			$supabaseCtrl    = new \Liventra\REST\SupabaseController( $supabaseService );
+			$supabaseCtrl->register_routes();
 		} catch ( \Exception $e ) {
 			// Silent catch to prevent boot crashes
 		}
