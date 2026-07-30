@@ -3,7 +3,7 @@
  * Plugin Name: Liventra
  * Plugin URI:  https://liventra.com
  * Description: Transform pre-recorded videos into realistic live webinar experiences on WordPress.
- * Version:     1.0.0
+ * Version:     1.0.1
  * Author:      Bamidele Matthew
  * Author URI:  https://liventra.com
  * Text Domain: liventra
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define Plugin Constants
-define( 'LIVENTRA_VERSION', '1.0.0' );
+define( 'LIVENTRA_VERSION', '1.0.1' );
 define( 'LIVENTRA_MIN_PHP_VERSION', '7.4' );
 define( 'LIVENTRA_MIN_WP_VERSION', '5.8' );
 define( 'LIVENTRA_FILE', __FILE__ );

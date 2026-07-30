@@ -1,16 +1,29 @@
 /**
  * Liventra Admin Studio & Visual Webinar Builder (assets/js/admin-studio.js)
- * Interactive SaaS Dashboard & Visual Timeline Builder with Robust Auto-Mounting.
+ * Interactive SaaS Dashboard & Visual Timeline Builder with Universal Event Delegation.
  */
 
 (function(window) {
     'use strict';
 
+    function getRestEndpoint(endpoint) {
+        let root = '';
+        if (window.liventraSettings && window.liventraSettings.root) {
+            root = window.liventraSettings.root;
+        } else if (window.wpApiSettings && window.wpApiSettings.root) {
+            root = window.wpApiSettings.root;
+        } else {
+            root = window.location.origin + '/wp-json/';
+        }
+        if (!root.endsWith('/')) root += '/';
+        return root + 'liventra/v1/' + endpoint;
+    }
+
     class LiventraAdminStudio {
         constructor(options = {}) {
             this.container = options.containerId ? document.getElementById(options.containerId) : document.body;
             this.activeTab = 'dashboard';
-            this.activeWebinarId = 1;
+            this.activeWebinarId = options.webinarId || 1;
             this.webinars = [
                 { id: 1, title: 'High-Ticket Evergreen Masterclass', status: 'published', attendees: 142, revenue: '$14,850', watchTime: '24m 18s' },
                 { id: 2, title: 'SaaS Automated Onboarding Demo', status: 'published', attendees: 89, revenue: '$8,200', watchTime: '18m 45s' },
@@ -23,6 +36,7 @@
         init() {
             if (!this.container) return;
             this.renderLayout();
+            this.bindUniversalEvents();
         }
 
         renderLayout() {
@@ -31,7 +45,7 @@
                     <header class="liventra-header">
                         <div class="liventra-header-title">
                             <h2>⚡ Liventra Admin Studio</h2>
-                            <span class="liventra-badge liventra-badge-primary">Enterprise v1.0.0-rc1</span>
+                            <span class="liventra-badge liventra-badge-primary">Enterprise v1.0.1</span>
                         </div>
                         <div class="liventra-header-actions">
                             <button id="btn-create-webinar" class="liventra-btn liventra-btn-primary">+ Create Webinar</button>
@@ -42,12 +56,12 @@
                     <div class="liventra-studio-layout">
                         <aside class="liventra-sidebar">
                             <nav class="liventra-sidebar-nav">
-                                <a class="liventra-nav-item ${this.activeTab === 'dashboard' ? 'active' : ''}" data-tab="dashboard">📊 Executive Dashboard</a>
-                                <a class="liventra-nav-item ${this.activeTab === 'timeline' ? 'active' : ''}" data-tab="timeline">⏱️ Visual Timeline</a>
-                                <a class="liventra-nav-item ${this.activeTab === 'video' ? 'active' : ''}" data-tab="video">🎥 Video Asset Manager</a>
-                                <a class="liventra-nav-item ${this.activeTab === 'cta' ? 'active' : ''}" data-tab="cta">💰 Conversion & CTA Builder</a>
-                                <a class="liventra-nav-item ${this.activeTab === 'chat' ? 'active' : ''}" data-tab="chat">💬 Live Chat Scripting</a>
-                                <a class="liventra-nav-item ${this.activeTab === 'simulation' ? 'active' : ''}" data-tab="simulation">⚡ Live Simulation Engine</a>
+                                <a class="liventra-nav-item ${this.activeTab === 'dashboard' ? 'active' : ''}" data-tab="dashboard" href="#dashboard">📊 Executive Dashboard</a>
+                                <a class="liventra-nav-item ${this.activeTab === 'timeline' ? 'active' : ''}" data-tab="timeline" href="#timeline">⏱️ Visual Timeline</a>
+                                <a class="liventra-nav-item ${this.activeTab === 'video' ? 'active' : ''}" data-tab="video" href="#video">🎥 Video Asset Manager</a>
+                                <a class="liventra-nav-item ${this.activeTab === 'cta' ? 'active' : ''}" data-tab="cta" href="#cta">💰 Conversion & CTA Builder</a>
+                                <a class="liventra-nav-item ${this.activeTab === 'chat' ? 'active' : ''}" data-tab="chat" href="#chat">💬 Live Chat Scripting</a>
+                                <a class="liventra-nav-item ${this.activeTab === 'simulation' ? 'active' : ''}" data-tab="simulation" href="#simulation">⚡ Live Simulation Engine</a>
                             </nav>
                         </aside>
                         <main class="liventra-content-canvas" id="liventra-canvas-body">
@@ -59,30 +73,69 @@
                 <div id="liventra-toast-root" class="liventra-toast-container"></div>
             `;
 
-            this.bindNavigation();
             this.renderTabContent();
         }
 
-        bindNavigation() {
-            const navItems = this.container.querySelectorAll('.liventra-nav-item');
-            navItems.forEach(item => {
-                item.addEventListener('click', (e) => {
+        bindUniversalEvents() {
+            this.container.addEventListener('click', (e) => {
+                const target = e.target.closest('a, button, .liventra-nav-item, .liventra-timeline-block');
+                if (!target) return;
+
+                // Handle Navigation Tabs
+                if (target.classList.contains('liventra-nav-item') || target.tagName === 'A' || target.hasAttribute('data-tab')) {
                     e.preventDefault();
-                    this.activeTab = item.getAttribute('data-tab');
-                    navItems.forEach(i => i.classList.remove('active'));
-                    item.classList.add('active');
-                    this.renderTabContent();
-                });
+                    let tab = target.getAttribute('data-tab');
+                    if (!tab && target.getAttribute('href')) {
+                        tab = target.getAttribute('href').replace('#', '');
+                    }
+                    if (tab) {
+                        this.switchTab(tab);
+                    }
+                    return;
+                }
+
+                // Handle Create Webinar Button
+                if (target.id === 'btn-create-webinar') {
+                    e.preventDefault();
+                    this.openCreateModal();
+                    return;
+                }
+
+                // Handle Preview Button
+                if (target.id === 'btn-preview-webinar' || target.id === 'liventra-btn-preview') {
+                    e.preventDefault();
+                    this.openPreviewModal();
+                    return;
+                }
+
+                // Handle Publish Button
+                if (target.id === 'btn-publish-webinar' || target.id === 'liventra-btn-publish') {
+                    e.preventDefault();
+                    this.publishWebinar();
+                    return;
+                }
+
+                // Handle Timeline Block Clicks
+                if (target.classList.contains('liventra-timeline-block') || target.classList.contains('timeline-block')) {
+                    e.preventDefault();
+                    alert('Editing Event Block: ' + target.innerText);
+                    return;
+                }
             });
+        }
 
-            const btnCreate = this.container.querySelector('#btn-create-webinar');
-            if (btnCreate) btnCreate.addEventListener('click', () => this.openCreateModal());
-
-            const btnPreview = this.container.querySelector('#btn-preview-webinar');
-            if (btnPreview) btnPreview.addEventListener('click', () => this.openPreviewModal());
-
-            const btnPublish = this.container.querySelector('#btn-publish-webinar');
-            if (btnPublish) btnPublish.addEventListener('click', () => this.publishWebinar());
+        switchTab(tabName) {
+            this.activeTab = tabName;
+            const navItems = this.container.querySelectorAll('.liventra-sidebar-nav a, .liventra-nav-item');
+            navItems.forEach(item => {
+                const t = item.getAttribute('data-tab') || (item.getAttribute('href') ? item.getAttribute('href').replace('#', '') : '');
+                if (t === tabName) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+            this.renderTabContent();
         }
 
         renderTabContent() {
@@ -114,7 +167,7 @@
                         </div>
                     </div>
                     <div class="liventra-card" style="margin-top: 24px;">
-                        <h3 style="margin-top:0; font-size:16px;">Managed Evergreen Webinars</h3>
+                        <h3 style="margin-top:0; font-size:16px; color:var(--lv-text);">Managed Evergreen Webinars</h3>
                         <table style="width:100%; border-collapse:collapse; font-size:13px; color:var(--lv-text);">
                             <thead>
                                 <tr style="border-bottom:1px solid var(--lv-border); text-align:left; color:var(--lv-text-muted);">
@@ -147,7 +200,7 @@
                 canvas.innerHTML = `
                     <div class="liventra-timeline-builder">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                            <h3 style="margin:0; font-size:16px;">Visual Timeline Track Canvas</h3>
+                            <h3 style="margin:0; font-size:16px; color:var(--lv-text);">Visual Timeline Track Canvas</h3>
                             <button id="btn-add-timeline-event" class="liventra-btn liventra-btn-primary">+ Add Event Block</button>
                         </div>
                         <div class="liventra-timeline-track">
@@ -186,7 +239,7 @@
             } else {
                 canvas.innerHTML = `
                     <div class="liventra-card">
-                        <h3>${this.activeTab.toUpperCase()} Module Management</h3>
+                        <h3 style="color:var(--lv-text); margin-top:0;">${this.activeTab.toUpperCase()} Module Management</h3>
                         <p style="color:var(--lv-text-muted);">Configure active parameters, real-time rules, and automated execution handlers.</p>
                         <button class="liventra-btn liventra-btn-primary" onclick="alert('${this.activeTab} configuration updated!')">Save ${this.activeTab} Settings</button>
                     </div>
@@ -296,9 +349,15 @@
 
         publishWebinar() {
             this.showToast('Publishing Webinar Version via REST...');
-            fetch('/wp-json/liventra/v1/studio/webinars/1/publish', {
+            const url = getRestEndpoint('studio/webinars/' + this.activeWebinarId + '/publish');
+            const headers = { 'Content-Type': 'application/json' };
+            if (window.liventraSettings && window.liventraSettings.nonce) {
+                headers['X-WP-Nonce'] = window.liventraSettings.nonce;
+            }
+
+            fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+                headers: headers
             })
             .then(res => res.json())
             .then(data => {
@@ -322,13 +381,18 @@
 
     window.LiventraAdminStudio = LiventraAdminStudio;
 
-    // Robust Auto-Mount Engine (Fires immediately whether script loads before or after DOMContentLoaded)
+    // Bulletproof Auto-Mount Engine
     function autoMount() {
-        const container = document.getElementById('liventra-admin-studio');
-        if (container && !container.dataset.mounted) {
-            container.dataset.mounted = 'true';
-            new LiventraAdminStudio({ containerId: 'liventra-admin-studio' });
-        }
+        const containers = [
+            document.getElementById('liventra-admin-studio'),
+            document.querySelector('.liventra-admin-studio')
+        ];
+        containers.forEach(container => {
+            if (container && !container.dataset.mounted) {
+                container.dataset.mounted = 'true';
+                new LiventraAdminStudio({ containerId: container.id || 'liventra-admin-studio' });
+            }
+        });
     }
 
     if (document.readyState === 'loading') {

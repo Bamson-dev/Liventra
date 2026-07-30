@@ -98,12 +98,19 @@ class WebinarModule implements ModuleInterface {
 		}
 
 		if ( function_exists( 'wp_enqueue_style' ) && function_exists( 'plugins_url' ) ) {
-			wp_enqueue_style( 'liventra-admin-css', plugins_url( 'assets/css/admin.css', LIVENTRA_FILE ), array(), LIVENTRA_VERSION );
-			wp_enqueue_script( 'liventra-admin-studio-js', plugins_url( 'assets/js/admin-studio.js', LIVENTRA_FILE ), array(), LIVENTRA_VERSION, true );
-			wp_enqueue_script( 'liventra-org-manager-js', plugins_url( 'assets/js/organization-manager.js', LIVENTRA_FILE ), array(), LIVENTRA_VERSION, true );
-			wp_enqueue_script( 'liventra-plugin-manager-js', plugins_url( 'assets/js/plugin-manager.js', LIVENTRA_FILE ), array(), LIVENTRA_VERSION, true );
-			wp_enqueue_script( 'liventra-ops-dashboard-js', plugins_url( 'assets/js/operations-dashboard.js', LIVENTRA_FILE ), array(), LIVENTRA_VERSION, true );
-			wp_enqueue_script( 'liventra-perf-dashboard-js', plugins_url( 'assets/js/performance-dashboard.js', LIVENTRA_FILE ), array(), LIVENTRA_VERSION, true );
+			$ver = defined( 'WP_DEBUG' ) && WP_DEBUG ? time() : LIVENTRA_VERSION;
+			wp_enqueue_style( 'liventra-admin-css', plugins_url( 'assets/css/admin.css', LIVENTRA_FILE ), array(), $ver );
+			wp_enqueue_script( 'liventra-admin-studio-js', plugins_url( 'assets/js/admin-studio.js', LIVENTRA_FILE ), array(), $ver, false );
+			wp_enqueue_script( 'liventra-org-manager-js', plugins_url( 'assets/js/organization-manager.js', LIVENTRA_FILE ), array(), $ver, false );
+			wp_enqueue_script( 'liventra-plugin-manager-js', plugins_url( 'assets/js/plugin-manager.js', LIVENTRA_FILE ), array(), $ver, false );
+			wp_enqueue_script( 'liventra-ops-dashboard-js', plugins_url( 'assets/js/operations-dashboard.js', LIVENTRA_FILE ), array(), $ver, false );
+			wp_enqueue_script( 'liventra-perf-dashboard-js', plugins_url( 'assets/js/performance-dashboard.js', LIVENTRA_FILE ), array(), $ver, false );
+
+			$rest_settings = array(
+				'root'  => esc_url_raw( rest_url() ),
+				'nonce' => wp_create_nonce( 'wp_rest' ),
+			);
+			wp_localize_script( 'liventra-admin-studio-js', 'liventraSettings', $rest_settings );
 		}
 	}
 
