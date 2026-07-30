@@ -1,0 +1,18 @@
+name: Liventra RC Release Packaging
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build Release Package
+        run: zip -r liventra-v1.0.0-rc1.zip . -x "*.git*" "node_modules/*" "tests/*"
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: liventra-v1.0.0-rc1.zip

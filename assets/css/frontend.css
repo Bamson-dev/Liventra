@@ -1,0 +1,435 @@
+/* Liventra Premium Frontend Styling */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --liventra-bg: #090d16;
+    --liventra-surface: #121826;
+    --liventra-surface-glass: rgba(18, 24, 38, 0.75);
+    --liventra-border: rgba(255, 255, 255, 0.1);
+    --liventra-primary: #6366f1;
+    --liventra-primary-hover: #4f46e5;
+    --liventra-accent-red: #ef4444;
+    --liventra-accent-green: #10b981;
+    --liventra-text: #f9fafb;
+    --liventra-text-muted: #9ca3af;
+    --liventra-radius: 12px;
+}
+
+.liventra-container {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--liventra-bg);
+    color: var(--liventra-text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Video Stage */
+.liventra-video-stage {
+    position: relative;
+    width: 100%;
+    max-width: 1080px;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border-radius: var(--liventra-radius);
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(99, 102, 241, 0.15);
+    border: 1px solid var(--liventra-border);
+}
+
+.liventra-chromeless-player {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Live Badge */
+.liventra-live-badge {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: rgba(239, 68, 68, 0.9);
+    color: #fff;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    backdrop-filter: blur(8px);
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.liventra-live-badge .pulse {
+    width: 8px;
+    height: 8px;
+    background-color: #fff;
+    border-radius: 50%;
+    animation: liventraPulse 1.5s infinite;
+}
+
+@keyframes liventraPulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(255, 255, 255, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+
+/* Muted Autoplay Audio Overlay */
+.liventra-audio-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(9, 13, 22, 0.65);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+}
+
+.liventra-unmute-btn {
+    background: linear-gradient(135deg, var(--liventra-primary), var(--liventra-primary-hover));
+    color: #fff;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 16px 32px;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.liventra-unmute-btn:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 15px 30px rgba(99, 102, 241, 0.6);
+}
+
+/* Purchase Popup Notification (PRD-005 Section 9) */
+.liventra-purchase-popup {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    background: rgba(18, 24, 38, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--liventra-radius);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(16, 185, 129, 0.2);
+    backdrop-filter: blur(12px);
+    z-index: 9999;
+    animation: liventraSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes liventraSlideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.liventra-popup-fadeout {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Live Poll Card (PRD-005 Section 10) */
+.liventra-poll-card {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 320px;
+    background: rgba(18, 24, 38, 0.95);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: var(--liventra-radius);
+    padding: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(12px);
+    z-index: 9999;
+}
+
+.liventra-poll-header {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--liventra-primary);
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.liventra-poll-question {
+    font-size: 15px;
+    margin: 0 0 14px 0;
+    color: var(--liventra-text);
+}
+
+.liventra-poll-opt-btn {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--liventra-border);
+    color: var(--liventra-text);
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s ease;
+}
+
+.liventra-poll-opt-btn:hover {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: var(--liventra-primary);
+}
+
+/* Video Engine Components (PRD-007 Part 14) */
+.liventra-video-player {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #000;
+    border-radius: var(--liventra-radius);
+}
+
+.liventra-buffering-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255, 255, 255, 0.2);
+    border-top-color: var(--liventra-primary);
+    border-radius: 50%;
+    animation: liventraSpinner 0.8s linear infinite;
+    z-index: 25;
+}
+
+@keyframes liventraSpinner {
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.liventra-quality-selector {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(18, 24, 38, 0.85);
+    border: 1px solid var(--liventra-border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: #fff;
+    font-size: 12px;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    z-index: 30;
+}
+
+/* Registration & Waiting Room Components (PRD-008 Part 15) */
+.liventra-registration-card {
+    background: rgba(18, 24, 38, 0.92);
+    border: 1px solid var(--liventra-border);
+    border-radius: var(--liventra-radius);
+    padding: 36px;
+    max-width: 440px;
+    margin: 40px auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(16px);
+}
+
+.liventra-form-group {
+    margin-bottom: 20px;
+}
+
+.liventra-form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--liventra-text);
+}
+
+.liventra-form-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--liventra-border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: #fff;
+    font-size: 15px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.liventra-form-input:focus {
+    outline: none;
+    border-color: var(--liventra-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+}
+
+.liventra-submit-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--liventra-primary), var(--liventra-primary-hover));
+    color: #fff;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.liventra-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px rgba(99, 102, 241, 0.6);
+}
+
+/* Waiting Room Screen */
+.liventra-waiting-room {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+/* CTA Engine Components (PRD-009 Part 14) */
+.liventra-cta-widget {
+    position: fixed;
+    z-index: 9990;
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+    border-radius: var(--liventra-radius);
+    padding: 20px 28px;
+    animation: liventraCtaSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes liventraCtaSlide {
+    from { transform: translateY(100px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.liventra-cta-sticky_footer {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 0;
+    border-top: 1px solid var(--liventra-primary);
+    background: rgba(18, 24, 38, 0.96);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.liventra-cta-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 20px;
+}
+
+.liventra-cta-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+}
+
+.liventra-cta-desc {
+    font-size: 14px;
+    color: var(--liventra-muted);
+}
+
+.liventra-cta-btn {
+    background: linear-gradient(135deg, var(--liventra-accent), #f59e0b);
+    color: #000;
+    font-weight: 800;
+    font-size: 15px;
+    padding: 12px 28px;
+    border-radius: 50px;
+    text-decoration: none;
+    display: inline-block;
+    box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Live Chat Engine Components (PRD-010 Part 15) */
+.liventra-chat-msg {
+    margin-bottom: 14px;
+    animation: liventraChatFadeIn 0.3s ease;
+}
+
+@keyframes liventraChatFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.liventra-chat-sender {
+    font-size: 12px;
+    color: var(--liventra-muted);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.liventra-mod-badge {
+    background: var(--liventra-primary);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+}
+
+.liventra-chat-bubble {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--liventra-border);
+    border-radius: 12px;
+    padding: 10px 14px;
+    color: var(--liventra-text);
+    font-size: 14px;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.liventra-chat-role-host .liventra-chat-bubble,
+.liventra-chat-role-moderator .liventra-chat-bubble {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.4);
+}
+
+.liventra-chat-reactions {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.liventra-reaction-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--liventra-border);
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.liventra-reaction-btn:hover {
+    background: rgba(99, 102, 241, 0.2);
+}
+
+
+
+
+

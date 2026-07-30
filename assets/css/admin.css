@@ -1,0 +1,157 @@
+/* Liventra Admin Studio SaaS CSS (assets/css/admin.css) - PRD-012 Part 16 */
+:root {
+    --liventra-admin-bg: #0b0f17;
+    --liventra-admin-card: #141c2b;
+    --liventra-admin-sidebar: #0e1626;
+    --liventra-admin-accent: #6366f1;
+    --liventra-admin-text: #f8fafc;
+    --liventra-admin-muted: #94a3b8;
+    --liventra-admin-border: rgba(255, 255, 255, 0.08);
+}
+
+body.liventra-admin-body {
+    background: var(--liventra-admin-bg);
+    color: var(--liventra-admin-text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.liventra-admin-studio {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.liventra-studio-header {
+    background: var(--liventra-admin-sidebar);
+    border-bottom: 1px solid var(--liventra-admin-border);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.liventra-studio-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff, var(--liventra-admin-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.liventra-header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.liventra-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.liventra-btn-primary {
+    background: linear-gradient(135deg, var(--liventra-admin-accent), #4f46e5);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+}
+
+.liventra-btn-secondary {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--liventra-admin-text);
+    border: 1px solid var(--liventra-admin-border);
+}
+
+.liventra-studio-main {
+    display: flex;
+    flex: 1;
+}
+
+.liventra-studio-sidebar {
+    width: 260px;
+    background: var(--liventra-admin-sidebar);
+    border-right: 1px solid var(--liventra-admin-border);
+    padding: 24px 16px;
+}
+
+.liventra-sidebar-nav a {
+    display: block;
+    color: var(--liventra-admin-muted);
+    text-decoration: none;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.liventra-sidebar-nav a.active,
+.liventra-sidebar-nav a:hover {
+    background: rgba(99, 102, 241, 0.15);
+    color: #fff;
+}
+
+.liventra-studio-content {
+    flex: 1;
+    padding: 32px;
+}
+
+/* Timeline Track Canvas */
+.liventra-timeline-canvas {
+    background: var(--liventra-admin-card);
+    border: 1px solid var(--liventra-admin-border);
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.liventra-timeline-track {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px dashed var(--liventra-admin-border);
+    border-radius: 8px;
+    margin-top: 16px;
+    padding: 12px 16px;
+    position: relative;
+    min-height: 60px;
+}
+
+.track-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--liventra-admin-muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.track-items {
+    position: relative;
+    height: 40px;
+}
+
+.timeline-block {
+    position: absolute;
+    top: 4px;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: grab;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.block-cta {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #000;
+}
+
+.block-chat {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: #fff;
+}
