@@ -92,6 +92,21 @@
             if (!this.container) return;
             this.renderLayout();
             this.bindGlobalEvents();
+            this.loadServerWebinars();
+        }
+
+        loadServerWebinars() {
+            const url = getRestEndpoint('studio/webinars');
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data) && data.length > 0) {
+                        this.webinars = data;
+                        this.saveWebinars();
+                        this.renderMainContent();
+                    }
+                })
+                .catch(() => {});
         }
 
         renderLayout() {
