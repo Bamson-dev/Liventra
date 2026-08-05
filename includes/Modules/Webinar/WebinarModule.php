@@ -67,7 +67,8 @@ class WebinarModule implements ModuleInterface {
 		if ( function_exists( 'wp_enqueue_style' ) && function_exists( 'plugins_url' ) ) {
 			$ver = defined( 'WP_DEBUG' ) && WP_DEBUG ? time() : LIVENTRA_VERSION;
 			wp_enqueue_style( 'liventra-admin-css', plugins_url( 'assets/css/admin.css', LIVENTRA_FILE ), array(), $ver );
-			wp_enqueue_script( 'liventra-admin-studio-js', plugins_url( 'assets/js/admin-studio.js', LIVENTRA_FILE ), array(), $ver, false );
+			wp_enqueue_script( 'liventra-video-library-js', plugins_url( 'assets/js/video-library.js', LIVENTRA_FILE ), array(), $ver, false );
+			wp_enqueue_script( 'liventra-admin-studio-js', plugins_url( 'assets/js/admin-studio.js', LIVENTRA_FILE ), array( 'liventra-video-library-js' ), $ver, false );
 
 			$rest_settings = array(
 				'root'  => esc_url_raw( rest_url() ),

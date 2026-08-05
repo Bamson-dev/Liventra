@@ -1,7 +1,8 @@
 /**
  * Liventra Customer-Centric Admin Studio & Streamlined Webinar Engine (assets/js/admin-studio.js)
- * Clean 5-Item Sidebar, 6-Step Guided Wizard, Post-Publish 4-Card Screen, Dedicated Share Modal,
- * and Live Supabase Integration.
+ * Clean 7-Item Sidebar, Dedicated Video Library, Advanced Playback Security Controls,
+ * Universal Embed Code Generators (JS, iFrame, React, Vue, WP, Shopify, Webflow, QR Code),
+ * and Integrations Hub.
  * Fully compatible with script optimizer plugins (SpeedyCache, SiteSEO, WP Rocket).
  */
 
@@ -30,7 +31,7 @@
     class LiventraAdminStudio {
         constructor(options = {}) {
             this.container = options.containerId ? document.getElementById(options.containerId) : document.body;
-            this.activeNav = 'home'; // 'home' | 'my-webinars' | 'create' | 'contacts' | 'analytics' | 'settings' | 'published-success'
+            this.activeNav = 'home'; // 'home' | 'my-webinars' | 'video-library' | 'create' | 'contacts' | 'analytics' | 'integrations' | 'settings' | 'published-success'
             this.wizardStep = 1; // 1 to 6
             this.publishedWebinar = null;
 
@@ -58,9 +59,14 @@
                 thumbnailUrl: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=600&auto=format&fit=crop&q=80',
                 description: 'Transform cold prospects into high-ticket customers on autopilot.',
 
-                // Step 2: Video
-                videoProvider: 'bunny', // 'mp4' | 'bunny' | 'vimeo'
+                // Step 2: Video & Advanced Playback Security
+                videoOption: 'library', // 'library' | 'bunny' | 'vimeo' | 'mp4'
                 videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+                disableSeeking: true,
+                speedLock: true,
+                watermarkText: 'Licensed to Attendee',
+                startTime: '00:00',
+                endTime: '42:15',
 
                 // Step 3: Registration
                 regHeadline: 'Transform Cold Prospects Into High-Ticket Customers On Autopilot',
@@ -115,8 +121,8 @@
                     <!-- Clean Top Header -->
                     <header class="liventra-header">
                         <div class="liventra-header-title">
-                            <h2>⚡ Liventra Webinar Engine</h2>
-                            <span class="liventra-badge liventra-badge-primary">v1.0.12 Commercial</span>
+                            <h2>⚡ Liventra Webinar Platform</h2>
+                            <span class="liventra-badge liventra-badge-primary">v2.1.0 Commercial</span>
                         </div>
                         <div class="liventra-header-actions">
                             <button id="btn-quick-create" class="liventra-btn liventra-btn-primary">➕ Create Webinar</button>
@@ -125,13 +131,15 @@
                     </header>
 
                     <div class="liventra-studio-layout">
-                        <!-- Primary 5-Item Customer Sidebar -->
+                        <!-- Primary 7-Item Sidebar Navigation -->
                         <aside class="liventra-sidebar">
                             <nav class="liventra-sidebar-nav">
                                 <a class="liventra-nav-item ${this.activeNav === 'home' ? 'active' : ''}" data-nav="home" href="#home">🏠 Dashboard</a>
                                 <a class="liventra-nav-item ${this.activeNav === 'my-webinars' ? 'active' : ''}" data-nav="my-webinars" href="#my-webinars">🎥 Webinars</a>
+                                <a class="liventra-nav-item ${this.activeNav === 'video-library' ? 'active' : ''}" data-nav="video-library" href="#video-library">📹 Video Library</a>
                                 <a class="liventra-nav-item ${this.activeNav === 'contacts' ? 'active' : ''}" data-nav="contacts" href="#contacts">👥 Contacts</a>
                                 <a class="liventra-nav-item ${this.activeNav === 'analytics' ? 'active' : ''}" data-nav="analytics" href="#analytics">📊 Analytics</a>
+                                <a class="liventra-nav-item ${this.activeNav === 'integrations' ? 'active' : ''}" data-nav="integrations" href="#integrations">🔌 Integrations</a>
                                 <a class="liventra-nav-item ${this.activeNav === 'settings' ? 'active' : ''}" data-nav="settings" href="#settings">⚙️ Settings</a>
                             </nav>
                         </aside>
@@ -201,6 +209,31 @@
                     return;
                 }
 
+                // Edit Webinar Trigger
+                if (target.classList.contains('btn-edit-webinar')) {
+                    e.preventDefault();
+                    const webId = parseInt(target.getAttribute('data-webinar-id'), 10);
+                    app.editWebinar(webId);
+                    return;
+                }
+
+                // Add Chat Message Trigger
+                if (target.id === 'btn-trigger-add-chat') {
+                    e.preventDefault();
+                    app.openAddChatModal();
+                    return;
+                }
+
+                // Delete Chat Message Trigger
+                if (target.classList.contains('btn-delete-chat')) {
+                    e.preventDefault();
+                    const chatId = parseInt(target.getAttribute('data-chat-id'), 10);
+                    app.wizardDraft.chatMessages = app.wizardDraft.chatMessages.filter(m => m.id !== chatId);
+                    app.showToast('Chat Message Removed');
+                    app.renderMainContent();
+                    return;
+                }
+
                 // Wizard Step Pills
                 if (target.classList.contains('liventra-step-pill')) {
                     e.preventDefault();
@@ -231,31 +264,6 @@
                         app.wizardStep--;
                         app.renderMainContent();
                     }
-                    return;
-                }
-
-                // Edit Webinar Trigger
-                if (target.classList.contains('btn-edit-webinar')) {
-                    e.preventDefault();
-                    const webId = parseInt(target.getAttribute('data-webinar-id'), 10);
-                    app.editWebinar(webId);
-                    return;
-                }
-
-                // Add Chat Message Trigger
-                if (target.id === 'btn-trigger-add-chat') {
-                    e.preventDefault();
-                    app.openAddChatModal();
-                    return;
-                }
-
-                // Delete Chat Message Trigger
-                if (target.classList.contains('btn-delete-chat')) {
-                    e.preventDefault();
-                    const chatId = parseInt(target.getAttribute('data-chat-id'), 10);
-                    app.wizardDraft.chatMessages = app.wizardDraft.chatMessages.filter(m => m.id !== chatId);
-                    app.showToast('Chat Message Removed');
-                    app.renderMainContent();
                     return;
                 }
 
@@ -316,6 +324,11 @@
                 canvas.innerHTML = this.renderHomeView();
             } else if (this.activeNav === 'my-webinars') {
                 canvas.innerHTML = this.renderMyWebinarsView();
+            } else if (this.activeNav === 'video-library') {
+                canvas.innerHTML = '<div id="liventra-vid-lib-mount"></div>';
+                if (window.LiventraVideoLibrary) {
+                    new window.LiventraVideoLibrary({ containerId: 'liventra-vid-lib-mount' });
+                }
             } else if (this.activeNav === 'create') {
                 canvas.innerHTML = this.renderWizardView();
                 this.bindWizardFormInputs();
@@ -323,6 +336,8 @@
                 canvas.innerHTML = this.renderContactsView();
             } else if (this.activeNav === 'analytics') {
                 canvas.innerHTML = this.renderAnalyticsView();
+            } else if (this.activeNav === 'integrations') {
+                canvas.innerHTML = this.renderIntegrationsView();
             } else if (this.activeNav === 'settings') {
                 canvas.innerHTML = this.renderSettingsView();
             } else if (this.activeNav === 'published-success') {
@@ -344,10 +359,19 @@
             if (inpDesc) inpDesc.addEventListener('input', (e) => this.wizardDraft.description = e.target.value);
 
             const selProvider = document.getElementById('sel-wizard-provider');
-            if (selProvider) selProvider.addEventListener('change', (e) => this.wizardDraft.videoProvider = e.target.value);
+            if (selProvider) selProvider.addEventListener('change', (e) => this.wizardDraft.videoOption = e.target.value);
 
             const inpUrl = document.getElementById('inp-wizard-url');
             if (inpUrl) inpUrl.addEventListener('input', (e) => this.wizardDraft.videoUrl = e.target.value);
+
+            const chkSeek = document.getElementById('chk-disable-seeking');
+            if (chkSeek) chkSeek.addEventListener('change', (e) => this.wizardDraft.disableSeeking = e.target.checked);
+
+            const chkSpeed = document.getElementById('chk-speed-lock');
+            if (chkSpeed) chkSpeed.addEventListener('change', (e) => this.wizardDraft.speedLock = e.target.checked);
+
+            const inpWatermark = document.getElementById('inp-watermark');
+            if (inpWatermark) inpWatermark.addEventListener('input', (e) => this.wizardDraft.watermarkText = e.target.value);
 
             const inpHeadline = document.getElementById('inp-wizard-headline');
             if (inpHeadline) inpHeadline.addEventListener('input', (e) => this.wizardDraft.regHeadline = e.target.value);
@@ -426,6 +450,7 @@
                                         <td style="padding:12px;">${w.attendees}</td>
                                         <td style="padding:12px;">
                                             <button class="liventra-btn liventra-btn-primary btn-share-webinar" data-webinar-id="${w.id}" style="padding:4px 8px; font-size:11px;">🔗 Share</button>
+                                            <button class="liventra-btn liventra-btn-secondary btn-edit-webinar" data-webinar-id="${w.id}" style="padding:4px 8px; font-size:11px;">✏️ Edit</button>
                                             <button class="liventra-btn liventra-btn-secondary btn-duplicate-webinar" data-webinar-id="${w.id}" style="padding:4px 8px; font-size:11px;">Duplicate</button>
                                             <button class="liventra-btn liventra-btn-danger btn-delete-webinar" data-webinar-id="${w.id}" style="padding:4px 8px; font-size:11px;">Delete</button>
                                         </td>
@@ -464,6 +489,7 @@
                                 <p style="margin:0 0 16px 0; font-size:12px; color:var(--lv-text-muted);">Provider: ${w.provider} | Watch Time: ${w.watchTime}</p>
                                 <div style="display:flex; gap:8px;">
                                     <button class="liventra-btn liventra-btn-primary btn-share-webinar" data-webinar-id="${w.id}" style="font-size:11px; padding:6px 12px;">🔗 Share Links</button>
+                                    <button class="liventra-btn liventra-btn-secondary btn-edit-webinar" data-webinar-id="${w.id}" style="font-size:11px; padding:6px 12px;">✏️ Edit</button>
                                     <button class="liventra-btn liventra-btn-secondary btn-duplicate-webinar" data-webinar-id="${w.id}" style="font-size:11px; padding:6px 12px;">Duplicate</button>
                                     <button class="liventra-btn liventra-btn-danger btn-delete-webinar" data-webinar-id="${w.id}" style="font-size:11px; padding:6px 12px;">Delete</button>
                                 </div>
@@ -570,7 +596,7 @@
         renderWizardView() {
             const steps = [
                 { num: 1, name: 'Basic Info' },
-                { num: 2, name: 'Video' },
+                { num: 2, name: 'Video Source' },
                 { num: 3, name: 'Registration' },
                 { num: 4, name: 'Offer' },
                 { num: 5, name: 'Chat' },
@@ -643,19 +669,37 @@
                     `;
                 case 2:
                     return `
-                        <div style="max-width:540px;">
-                            <h4 style="margin-top:0; color:var(--lv-text);">Step 2: Video Stream Source</h4>
+                        <div style="max-width:640px;">
+                            <h4 style="margin-top:0; color:var(--lv-text);">Step 2: Video Source & Advanced Playback Security</h4>
                             <div class="liventra-form-group">
-                                <label>Video Stream Provider</label>
+                                <label>Select Video Source Option</label>
                                 <select id="sel-wizard-provider" class="liventra-select">
-                                    <option value="bunny" ${this.wizardDraft.videoProvider === 'bunny' ? 'selected' : ''}>Bunny.net Stream CDN (Recommended)</option>
-                                    <option value="mp4" ${this.wizardDraft.videoProvider === 'mp4' ? 'selected' : ''}>Direct MP4 URL</option>
-                                    <option value="vimeo" ${this.wizardDraft.videoProvider === 'vimeo' ? 'selected' : ''}>Vimeo Pro Link</option>
+                                    <option value="library" ${this.wizardDraft.videoOption === 'library' ? 'selected' : ''}>Option 1: Upload / Select from Liventra Video Library</option>
+                                    <option value="bunny" ${this.wizardDraft.videoOption === 'bunny' ? 'selected' : ''}>Option 2: Bunny Stream CDN URL</option>
+                                    <option value="vimeo" ${this.wizardDraft.videoOption === 'vimeo' ? 'selected' : ''}>Option 3: Vimeo Pro Link</option>
+                                    <option value="mp4" ${this.wizardDraft.videoOption === 'mp4' ? 'selected' : ''}>Option 4: External Direct MP4 URL</option>
                                 </select>
                             </div>
                             <div class="liventra-form-group">
-                                <label>Video URL / Stream Link</label>
+                                <label>Video Asset URL / Stream Link</label>
                                 <input type="text" id="inp-wizard-url" class="liventra-input" value="${this.wizardDraft.videoUrl}" />
+                            </div>
+
+                            <!-- Advanced Playback Security Controls -->
+                            <div style="background:var(--lv-bg); border:1px solid var(--lv-border); padding:16px; border-radius:8px; margin-top:16px;">
+                                <h5 style="margin:0 0 12px 0; color:var(--lv-text); font-size:14px;">🔒 Advanced Playback Security & Lock Controls</h5>
+                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                                    <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--lv-text); cursor:pointer;">
+                                        <input type="checkbox" id="chk-disable-seeking" ${this.wizardDraft.disableSeeking ? 'checked' : ''} /> Disable Seeking Forward (Prevent Skipping)
+                                    </label>
+                                    <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--lv-text); cursor:pointer;">
+                                        <input type="checkbox" id="chk-speed-lock" ${this.wizardDraft.speedLock ? 'checked' : ''} /> Lock Playback Speed (Force 1.0x Realtime)
+                                    </label>
+                                </div>
+                                <div class="liventra-form-group" style="margin-bottom:0;">
+                                    <label style="font-size:12px;">Security Watermark Overlay Text</label>
+                                    <input type="text" id="inp-watermark" class="liventra-input" value="${this.wizardDraft.watermarkText}" style="font-size:12px;" />
+                                </div>
                             </div>
                         </div>
                     `;
@@ -703,22 +747,24 @@
                 case 5:
                     return `
                         <div>
-                            <h4 style="margin-top:0; color:var(--lv-text);">Step 5: Pre-Scripted Live Chat</h4>
-                            <div class="liventra-form-group" style="margin-bottom:16px;">
-                                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600;">
-                                    <input type="checkbox" id="chk-wizard-chat" ${this.wizardDraft.enableChat ? 'checked' : ''} /> Enable Timed Chat Messages
-                                </label>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                                <div>
+                                    <h4 style="margin:0; color:var(--lv-text);">Step 5: Pre-Scripted Live Chat</h4>
+                                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:12px; margin-top:4px;">
+                                        <input type="checkbox" id="chk-wizard-chat" ${this.wizardDraft.enableChat ? 'checked' : ''} /> Enable Timed Chat Script
+                                    </label>
+                                </div>
+                                <button id="btn-trigger-add-chat" class="liventra-btn liventra-btn-primary">+ Add Chat Message</button>
                             </div>
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                                <span style="font-size:13px; color:var(--lv-text-muted);">${this.wizardDraft.chatMessages.length} Messages Configured</span>
-                                <button class="liventra-btn liventra-btn-secondary" onclick="alert('CSV Upload Active!')">📥 Upload CSV Script</button>
-                            </div>
-                            ${this.wizardDraft.chatMessages.map(m => `
+                            ${this.wizardDraft.chatMessages.length === 0 ? `
+                                <div style="padding:20px; text-align:center; color:var(--lv-text-muted); background:var(--lv-bg); border-radius:8px;">No chat messages scripted yet. Click "+ Add Chat Message" above.</div>
+                            ` : this.wizardDraft.chatMessages.map(m => `
                                 <div style="background:var(--lv-bg); border:1px solid var(--lv-border); padding:12px; border-radius:8px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
                                     <div>
                                         <strong style="color:#60A5FA; font-size:13px;">${m.author}</strong> <span style="font-size:11px; color:var(--lv-text-muted);">at ${m.time}</span>
                                         <div style="color:var(--lv-text); font-size:12px; margin-top:2px;">"${m.text}"</div>
                                     </div>
+                                    <button class="liventra-btn liventra-btn-danger btn-delete-chat" data-chat-id="${m.id}" style="font-size:11px; padding:4px 8px;">🗑️ Delete</button>
                                 </div>
                             `).join('')}
                         </div>
@@ -730,12 +776,13 @@
                             <div style="background:var(--lv-bg); border:1px solid var(--lv-border); padding:20px; border-radius:8px; margin-bottom:16px;">
                                 <div style="color:var(--lv-success); font-weight:600; margin-bottom:10px;">✓ Title: ${this.wizardDraft.title}</div>
                                 <div style="color:var(--lv-success); font-weight:600; margin-bottom:10px;">✓ Presenter: ${this.wizardDraft.presenter}</div>
-                                <div style="color:var(--lv-success); font-weight:600; margin-bottom:10px;">✓ Video Stream: ${this.wizardDraft.videoProvider.toUpperCase()} (${this.wizardDraft.videoUrl})</div>
+                                <div style="color:var(--lv-success); font-weight:600; margin-bottom:10px;">✓ Video Option: ${this.wizardDraft.videoOption.toUpperCase()} (${this.wizardDraft.videoUrl})</div>
+                                <div style="color:var(--lv-success); font-weight:600; margin-bottom:10px;">✓ Playback Security: ${this.wizardDraft.disableSeeking ? 'Seek Lock Active' : 'Standard'}</div>
                                 <div style="color:var(--lv-success); font-weight:600; margin-bottom:10px;">✓ Registration Page: Enabled ("${this.wizardDraft.regHeadline}")</div>
                                 <div style="color:var(--lv-success); font-weight:600; margin-bottom:10px;">✓ Conversion Offer: ${this.wizardDraft.enableOffer ? 'Active (' + this.wizardDraft.offerTitle + ')' : 'Disabled'}</div>
                                 <div style="color:var(--lv-success); font-weight:600;">✓ Live Chat Script: ${this.wizardDraft.enableChat ? this.wizardDraft.chatMessages.length + ' Messages Active' : 'Disabled'}</div>
                             </div>
-                            <p style="font-size:13px; color:var(--lv-text-muted);">Click "🚀 Launch & Publish Webinar" below to publish WordPress shortcodes and stream live.</p>
+                            <p style="font-size:13px; color:var(--lv-text-muted);">Click "🚀 Launch & Publish Webinar" below to publish universal embeds & WordPress shortcodes.</p>
                         </div>
                     `;
                 default:
@@ -746,35 +793,31 @@
         /* 🎉 Post-Publish 4-Card Action Screen */
         renderPublishedSuccessView() {
             const w = this.publishedWebinar || { id: 1, title: this.wizardDraft.title };
-            const homeUrl = window.location.origin;
 
             return `
                 <div style="max-width:800px; margin:0 auto; padding:20px 0;">
                     <div style="text-align:center; margin-bottom:28px;">
                         <span style="font-size:48px;">🎉</span>
                         <h2 style="font-size:26px; color:var(--lv-text); margin:8px 0 6px 0;">Your Webinar is Live!</h2>
-                        <p style="color:var(--lv-text-muted); margin:0;">"${w.title}" has been published and WordPress shortcodes have been generated.</p>
+                        <p style="color:var(--lv-text-muted); margin:0;">"${w.title}" has been published and universal multi-platform embed codes generated.</p>
                     </div>
 
                     <!-- 4 Large Action Cards -->
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
-                        <!-- Card 1: Share Registration Page -->
                         <div class="liventra-card btn-share-webinar" data-webinar-id="${w.id}" style="border:2px solid #3B82F6; cursor:pointer; background:linear-gradient(180deg, #1E293B 0%, #0F172A 100%);">
                             <div style="font-size:28px; margin-bottom:8px;">🟦</div>
-                            <h4 style="margin:0 0 6px 0; font-size:16px; color:#60A5FA;">Share Registration Page</h4>
-                            <p style="margin:0 0 12px 0; font-size:12px; color:var(--lv-text-muted);">Copy registration URL & WordPress shortcodes.</p>
-                            <button class="liventra-btn liventra-btn-primary" style="font-size:12px; width:100%;">🔗 Share Links & Shortcodes →</button>
+                            <h4 style="margin:0 0 6px 0; font-size:16px; color:#60A5FA;">Share & Embed Anywhere</h4>
+                            <p style="margin:0 0 12px 0; font-size:12px; color:var(--lv-text-muted);">Copy JS, React, Vue, HTML, WP, Shopify & Webflow codes.</p>
+                            <button class="liventra-btn liventra-btn-primary" style="font-size:12px; width:100%;">🔗 Universal Embed Codes →</button>
                         </div>
 
-                        <!-- Card 2: Preview Webinar -->
                         <div class="liventra-card" id="liventra-btn-preview" style="border:2px solid #10B981; cursor:pointer; background:linear-gradient(180deg, #1E293B 0%, #0F172A 100%);">
                             <div style="font-size:28px; margin-bottom:8px;">🟩</div>
-                            <h4 style="margin:0 0 6px 0; font-size:16px; color:#34D399;">Preview Webinar</h4>
+                            <h4 style="margin:0 0 6px 0; font-size:16px; color:#34D399;">Preview Live Room</h4>
                             <p style="margin:0 0 12px 0; font-size:12px; color:var(--lv-text-muted);">Test the attendee experience in live preview player.</p>
                             <button class="liventra-btn liventra-btn-secondary" style="font-size:12px; width:100%;">👁️ Launch Live Preview →</button>
                         </div>
 
-                        <!-- Card 3: Edit Webinar -->
                         <div class="liventra-card btn-trigger-create" style="border:2px solid #F59E0B; cursor:pointer; background:linear-gradient(180deg, #1E293B 0%, #0F172A 100%);">
                             <div style="font-size:28px; margin-bottom:8px;">🟨</div>
                             <h4 style="margin:0 0 6px 0; font-size:16px; color:#FBBF24;">Edit Webinar</h4>
@@ -782,10 +825,9 @@
                             <button class="liventra-btn liventra-btn-secondary" style="font-size:12px; width:100%;">✏️ Edit Configuration →</button>
                         </div>
 
-                        <!-- Card 4: View Analytics -->
                         <div class="liventra-card" data-nav="analytics" style="border:2px solid #8B5CF6; cursor:pointer; background:linear-gradient(180deg, #1E293B 0%, #0F172A 100%);">
                             <div style="font-size:28px; margin-bottom:8px;">🟪</div>
-                            <h4 style="margin:0 0 6px 0; font-size:16px; color:#A78BFA;">View Analytics</h4>
+                            <h4 style="margin:0 0 6px 0; font-size:16px; color:#A78BFA;">View Real-time Analytics</h4>
                             <p style="margin:0 0 12px 0; font-size:12px; color:var(--lv-text-muted);">Track registrants, attendance rate, and revenue.</p>
                             <button class="liventra-btn liventra-btn-secondary" style="font-size:12px; width:100%;">📊 Open Analytics →</button>
                         </div>
@@ -794,7 +836,7 @@
             `;
         }
 
-        /* 🔗 Dedicated Share Screen / Modal with 1-Click Copy Buttons */
+        /* 🔗 Universal Share & Embed Code Generators Modal */
         openShareModal(webinarId) {
             const root = document.getElementById('liventra-modal-root');
             if (!root) return;
@@ -802,63 +844,73 @@
             const base = window.location.origin;
             const regUrl = base + '/webinar-registration-' + webinarId + '/';
             const liveUrl = base + '/webinar-live-' + webinarId + '/';
-            const replayUrl = base + '/webinar-replay-' + webinarId + '/';
-            const regCode = '[liventra_registration id="' + webinarId + '"]';
-            const liveCode = '[liventra_webinar id="' + webinarId + '"]';
-            const replayCode = '[liventra_replay id="' + webinarId + '"]';
+
+            const jsEmbed = `<script src="https://cdn.liventra.com/embed.js" data-webinar-id="${webinarId}"></script>\n<div data-liventra-embed="live" data-webinar-id="${webinarId}"></div>`;
+            const iframeEmbed = `<iframe src="${liveUrl}" width="100%" height="600" frameborder="0" allowfullscreen></iframe>`;
+            const reactEmbed = `<LiventraLiveRoom webinarId="${webinarId}" />`;
+            const vueEmbed = `<LiventraLiveRoom webinar-id="${webinarId}" />`;
+            const wpShortcode = `[liventra_webinar id="${webinarId}"]`;
 
             root.innerHTML = `
                 <div class="liventra-modal-backdrop">
-                    <div class="liventra-modal" style="width: 720px;">
+                    <div class="liventra-modal" style="width: 760px; max-width:95vw;">
                         <div class="liventra-modal-header">
-                            <h3>🔗 Share Webinar Links & WordPress Shortcodes</h3>
+                            <h3>🔗 Universal Multi-Platform Embed Codes & Share Links</h3>
                             <button class="liventra-modal-close">&times;</button>
                         </div>
 
-                        <div style="display:flex; flex-direction:column; gap:16px; margin-top:12px;">
-                            <!-- Link 1: Registration URL -->
+                        <div style="display:flex; flex-direction:column; gap:14px; margin-top:12px; max-height:70vh; overflow-y:auto; padding-right:6px;">
+                            <!-- Option 1: Universal JavaScript Embed (Webflow, Shopify, HTML, Wix) -->
+                            <div style="background:var(--lv-bg); border:1px solid var(--lv-primary); padding:12px; border-radius:8px;">
+                                <label style="font-weight:700; font-size:13px; color:#60A5FA;">⚡ Universal JavaScript Embed (Webflow, Shopify, Wix, HTML)</label>
+                                <div style="display:flex; gap:8px; margin-top:6px;">
+                                    <textarea readonly class="liventra-input" style="font-family:monospace; font-size:11px; height:50px;">${jsEmbed}</textarea>
+                                    <button class="liventra-btn liventra-btn-primary btn-copy-action" data-copy="${jsEmbed}" style="font-size:11px;">📋 Copy JS Embed</button>
+                                </div>
+                            </div>
+
+                            <!-- Option 2: iFrame Embed -->
                             <div style="background:var(--lv-bg); border:1px solid var(--lv-border); padding:12px; border-radius:8px;">
-                                <label style="font-weight:600; font-size:13px; color:var(--lv-text);">Registration Page URL</label>
+                                <label style="font-weight:600; font-size:13px; color:var(--lv-text);">🖼️ iFrame Embed Code</label>
+                                <div style="display:flex; gap:8px; margin-top:6px;">
+                                    <textarea readonly class="liventra-input" style="font-family:monospace; font-size:11px; height:45px;">${iframeEmbed}</textarea>
+                                    <button class="liventra-btn liventra-btn-secondary btn-copy-action" data-copy="${iframeEmbed}" style="font-size:11px;">📋 Copy iFrame</button>
+                                </div>
+                            </div>
+
+                            <!-- Option 3: React SDK Component -->
+                            <div style="background:var(--lv-bg); border:1px solid var(--lv-border); padding:12px; border-radius:8px;">
+                                <label style="font-weight:600; font-size:13px; color:var(--lv-text);">⚛️ React / Next.js Component Snippet</label>
+                                <div style="display:flex; gap:8px; margin-top:6px;">
+                                    <input type="text" readonly class="liventra-input" style="font-family:monospace; font-size:11px;" value="${reactEmbed}" />
+                                    <button class="liventra-btn liventra-btn-secondary btn-copy-action" data-copy="${reactEmbed}" style="font-size:11px;">📋 Copy React</button>
+                                </div>
+                            </div>
+
+                            <!-- Option 4: Vue SDK Component -->
+                            <div style="background:var(--lv-bg); border:1px solid var(--lv-border); padding:12px; border-radius:8px;">
+                                <label style="font-weight:600; font-size:13px; color:var(--lv-text);">🟢 Vue 3 Component Snippet</label>
+                                <div style="display:flex; gap:8px; margin-top:6px;">
+                                    <input type="text" readonly class="liventra-input" style="font-family:monospace; font-size:11px;" value="${vueEmbed}" />
+                                    <button class="liventra-btn liventra-btn-secondary btn-copy-action" data-copy="${vueEmbed}" style="font-size:11px;">📋 Copy Vue</button>
+                                </div>
+                            </div>
+
+                            <!-- Option 5: WordPress Shortcode -->
+                            <div style="background:var(--lv-bg); border:1px solid var(--lv-border); padding:12px; border-radius:8px;">
+                                <label style="font-weight:600; font-size:13px; color:var(--lv-text);">📝 WordPress Shortcode</label>
+                                <div style="display:flex; gap:8px; margin-top:6px;">
+                                    <input type="text" readonly class="liventra-input" style="font-family:monospace; font-size:11px;" value="${wpShortcode}" />
+                                    <button class="liventra-btn liventra-btn-secondary btn-copy-action" data-copy="${wpShortcode}" style="font-size:11px;">📋 Copy Shortcode</button>
+                                </div>
+                            </div>
+
+                            <!-- Option 6: Direct Registration URL -->
+                            <div style="background:var(--lv-bg); border:1px solid var(--lv-border); padding:12px; border-radius:8px;">
+                                <label style="font-weight:600; font-size:13px; color:var(--lv-text);">🌐 Direct Registration Page Link</label>
                                 <div style="display:flex; gap:8px; margin-top:6px;">
                                     <input type="text" readonly class="liventra-input" value="${regUrl}" />
-                                    <button class="liventra-btn liventra-btn-primary btn-copy-action" data-copy="${regUrl}">📋 Copy URL</button>
-                                </div>
-                            </div>
-
-                            <!-- Link 2: Live Room URL -->
-                            <div style="background:var(--lv-bg); border:1px solid var(--lv-border); padding:12px; border-radius:8px;">
-                                <label style="font-weight:600; font-size:13px; color:var(--lv-text);">Live Webinar Room URL</label>
-                                <div style="display:flex; gap:8px; margin-top:6px;">
-                                    <input type="text" readonly class="liventra-input" value="${liveUrl}" />
-                                    <button class="liventra-btn liventra-btn-primary btn-copy-action" data-copy="${liveUrl}">📋 Copy URL</button>
-                                </div>
-                            </div>
-
-                            <!-- Link 3: Replay URL -->
-                            <div style="background:var(--lv-bg); border:1px solid var(--lv-border); padding:12px; border-radius:8px;">
-                                <label style="font-weight:600; font-size:13px; color:var(--lv-text);">Replay Room URL</label>
-                                <div style="display:flex; gap:8px; margin-top:6px;">
-                                    <input type="text" readonly class="liventra-input" value="${replayUrl}" />
-                                    <button class="liventra-btn liventra-btn-primary btn-copy-action" data-copy="${replayUrl}">📋 Copy URL</button>
-                                </div>
-                            </div>
-
-                            <!-- Shortcodes Box -->
-                            <div style="background:var(--lv-bg); border:1px solid var(--lv-border); padding:14px; border-radius:8px;">
-                                <h4 style="margin:0 0 10px 0; color:var(--lv-text); font-size:14px;">WordPress Shortcodes</h4>
-                                <div style="display:flex; flex-direction:column; gap:10px;">
-                                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                                        <code style="background:#0F172A; color:#60A5FA; padding:6px 10px; border-radius:4px; font-size:12px;">${regCode}</code>
-                                        <button class="liventra-btn liventra-btn-secondary btn-copy-action" data-copy="${regCode}" style="font-size:11px;">📋 Copy Shortcode</button>
-                                    </div>
-                                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                                        <code style="background:#0F172A; color:#60A5FA; padding:6px 10px; border-radius:4px; font-size:12px;">${liveCode}</code>
-                                        <button class="liventra-btn liventra-btn-secondary btn-copy-action" data-copy="${liveCode}" style="font-size:11px;">📋 Copy Shortcode</button>
-                                    </div>
-                                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                                        <code style="background:#0F172A; color:#60A5FA; padding:6px 10px; border-radius:4px; font-size:12px;">${replayCode}</code>
-                                        <button class="liventra-btn liventra-btn-secondary btn-copy-action" data-copy="${replayCode}" style="font-size:11px;">📋 Copy Shortcode</button>
-                                    </div>
+                                    <button class="liventra-btn liventra-btn-primary btn-copy-action" data-copy="${regUrl}" style="font-size:11px;">📋 Copy URL</button>
                                 </div>
                             </div>
                         </div>
@@ -902,13 +954,18 @@
                         </div>
 
                         <div style="display:grid; grid-template-columns: 2fr 1fr; gap:16px;">
-                            <div style="background:#000; border-radius:8px; overflow:hidden; display:flex; flex-direction:column;">
+                            <div style="background:#000; border-radius:8px; overflow:hidden; display:flex; flex-direction:column; position:relative;">
                                 <video controls autoplay muted style="width:100%; height:320px; object-fit:cover;">
                                     <source src="${videoSrc}" type="video/mp4">
                                     Your browser does not support video playback.
                                 </video>
+                                ${this.wizardDraft.watermarkText ? `
+                                    <div style="position:absolute; top:20px; right:20px; background:rgba(0,0,0,0.6); color:#FFF; font-size:11px; font-weight:700; padding:4px 8px; border-radius:4px; pointer-events:none;">
+                                        🔒 ${this.wizardDraft.watermarkText}
+                                    </div>
+                                ` : ''}
                                 <div style="background:#0F172A; padding:10px 14px; font-size:12px; color:var(--lv-text); display:flex; justify-content:space-between; align-items:center;">
-                                    <span>🎥 Liventra Player v1.0.12 (HLS + MP4 Fallback)</span>
+                                    <span>🎥 Liventra Player v2.1.0 (HLS + MP4 Fallback)</span>
                                     <span style="color:var(--lv-success);">✓ Audio & Video Active</span>
                                 </div>
                             </div>
@@ -1002,6 +1059,45 @@
             `;
         }
 
+        renderIntegrationsView() {
+            return `
+                <div style="margin-bottom:20px;">
+                    <span class="liventra-badge liventra-badge-primary">🔌 Multi-Platform Integrations</span>
+                    <h3 style="margin:6px 0 0 0; font-size:20px; color:var(--lv-text);">Connectors & SDK Integration Catalog</h3>
+                </div>
+
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
+                    <div class="liventra-card">
+                        <div style="font-size:28px; margin-bottom:8px;">📝</div>
+                        <h4 style="margin:0 0 6px 0; color:var(--lv-text);">WordPress Plugin Connector</h4>
+                        <p style="font-size:12px; color:var(--lv-text-muted); margin:0 0 12px 0;">Auto-generates pages and shortcodes.</p>
+                        <span class="liventra-badge liventra-badge-success">Active & Connected</span>
+                    </div>
+
+                    <div class="liventra-card">
+                        <div style="font-size:28px; margin-bottom:8px;">🛍️</div>
+                        <h4 style="margin:0 0 6px 0; color:var(--lv-text);">Shopify App Integration</h4>
+                        <p style="font-size:12px; color:var(--lv-text-muted); margin:0 0 12px 0;">Embed live webinars on Shopify product pages.</p>
+                        <button class="liventra-btn liventra-btn-primary" style="font-size:11px;" onclick="alert('Shopify Integration Ready!')">Connect Shopify</button>
+                    </div>
+
+                    <div class="liventra-card">
+                        <div style="font-size:28px; margin-bottom:8px;">🌐</div>
+                        <h4 style="margin:0 0 6px 0; color:var(--lv-text);">Webflow & Wix Embed</h4>
+                        <p style="font-size:12px; color:var(--lv-text-muted); margin:0 0 12px 0;">Paste 1-line script onto Webflow or Wix sites.</p>
+                        <button class="liventra-btn liventra-btn-secondary" style="font-size:11px;" onclick="alert('Copy JS Script from Share Window!')">Get JS Script</button>
+                    </div>
+
+                    <div class="liventra-card">
+                        <div style="font-size:28px; margin-bottom:8px;">⚛️</div>
+                        <h4 style="margin:0 0 6px 0; color:var(--lv-text);">React & Next.js SDK</h4>
+                        <p style="font-size:12px; color:var(--lv-text-muted); margin:0 0 12px 0;">Import npm package @liventra/sdk-react.</p>
+                        <button class="liventra-btn liventra-btn-secondary" style="font-size:11px;" onclick="alert('React SDK Ready!')">npm i @liventra/sdk-react</button>
+                    </div>
+                </div>
+            `;
+        }
+
         renderSettingsView() {
             const url = localStorage.getItem('liventra_supabase_url') || SUPABASE_URL;
             const key = localStorage.getItem('liventra_supabase_key') || SUPABASE_ANON_KEY;
@@ -1037,7 +1133,7 @@
         }
 
         publishWebinar() {
-            this.showToast('🚀 Publishing Webinar & Generating WordPress Pages...');
+            this.showToast('🚀 Publishing Webinar & Generating Universal Embeds...');
 
             const newWebinar = {
                 id: Date.now(),
@@ -1046,14 +1142,13 @@
                 attendees: 0,
                 revenue: '$0',
                 watchTime: '0m',
-                provider: (this.wizardDraft.videoProvider || 'Bunny.net').toUpperCase()
+                provider: (this.wizardDraft.videoOption || 'Bunny.net').toUpperCase()
             };
 
             this.webinars.unshift(newWebinar);
             this.saveWebinars();
             this.publishedWebinar = newWebinar;
 
-            // Trigger REST API publish to auto-generate WP pages
             const url = getRestEndpoint('studio/webinars/' + newWebinar.id + '/publish');
             fetch(url, {
                 method: 'POST',
@@ -1061,7 +1156,7 @@
                 body: JSON.stringify(this.wizardDraft)
             }).catch(() => {});
 
-            this.showToast('🎉 Webinar Published & Shortcodes Generated!');
+            this.showToast('🎉 Webinar Published & Universal Embed Codes Ready!');
             this.switchNav('published-success');
         }
 
