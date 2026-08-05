@@ -122,7 +122,7 @@
                     <header class="liventra-header">
                         <div class="liventra-header-title">
                             <h2>⚡ Liventra Webinar Platform</h2>
-                            <span class="liventra-badge liventra-badge-primary">v2.1.0 Commercial</span>
+                            <span class="liventra-badge liventra-badge-primary">Cloud Platform</span>
                         </div>
                         <div class="liventra-header-actions">
                             <button id="btn-quick-create" class="liventra-btn liventra-btn-primary">➕ Create Webinar</button>
@@ -965,7 +965,7 @@
                                     </div>
                                 ` : ''}
                                 <div style="background:#0F172A; padding:10px 14px; font-size:12px; color:var(--lv-text); display:flex; justify-content:space-between; align-items:center;">
-                                    <span>🎥 Liventra Player v2.1.0 (HLS + MP4 Fallback)</span>
+                                    <span>🎥 Liventra Player (HLS + MP4 Stream)</span>
                                     <span style="color:var(--lv-success);">✓ Audio & Video Active</span>
                                 </div>
                             </div>
