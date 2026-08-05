@@ -25,7 +25,11 @@ let videosStore = [
 
 // 1. Health Check
 app.get('/health', (req, res) => {
-    res.json({ status: 'healthy', platform: 'Liventra Cloud Platform', time: new Date() });
+    res.status(200).json({ status: 'ok' });
+});
+
+app.get('/api/health', (req, res) => {
+    res.status(200).json({ status: 'ok' });
 });
 
 // 2. Authentication API

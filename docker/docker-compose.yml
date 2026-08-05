@@ -4,7 +4,7 @@ services:
   liventra-api:
     build:
       context: ..
-      dockerfile: docker/Dockerfile
+      dockerfile: Dockerfile
     container_name: liventra-cloud-api
     restart: always
     ports:
@@ -14,10 +14,11 @@ services:
       - NODE_ENV=production
       - SUPABASE_URL=https://qtkuqwafpasalsgogpka.supabase.co
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:3000/health || exit 1"]
       interval: 30s
-      timeout: 10s
-      retries: 3
+      timeout: 5s
+      start_period: 30s
+      retries: 5
 
   liventra-nginx:
     image: nginx:alpine

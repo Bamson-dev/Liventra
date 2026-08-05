@@ -1,15 +1,17 @@
-# Multi-stage Dockerfile for Liventra Cloud Platform (docker/Dockerfile)
-# Deployable directly on Contabo/Hetzner VPS using Coolify
+# Production Dockerfile for Liventra Cloud Platform
+# Optimized for 1-Click Coolify / VPS Deployment
 
-FROM node:18-alpine AS base
+FROM node:18-alpine AS runner
 WORKDIR /app
 
-# Copy Monorepo Dependencies
+# Install system utilities (curl and wget for health checks)
+RUN apk add --no-cache curl wget
+
+# Install dependencies
 COPY package.json ./
-COPY services/api/package.json ./services/api/
 RUN npm install --production
 
-# Copy Application Source Code
+# Copy application source
 COPY . .
 
 EXPOSE 3000
@@ -17,4 +19,7 @@ EXPOSE 3000
 ENV NODE_ENV=production
 ENV PORT=3000
 
-CMD ["node", "services/api/server.js"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=5 \
+  CMD curl -f http://127.0.0.1:3000/health || exit 1
+
+CMD ["npm", "start"]
