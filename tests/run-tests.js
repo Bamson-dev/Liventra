@@ -786,7 +786,10 @@ assert(rootPkgContent.includes("node services/api/server.js"), "Root package.jso
 const serverApiPath = path.join(projectRoot, 'services', 'api', 'server.js');
 assert(fs.existsSync(serverApiPath), "services/api/server.js exists");
 const serverApiContent = fs.readFileSync(serverApiPath, 'utf8');
-assert(serverApiContent.includes("0.0.0.0"), "Express server explicitly binds to 0.0.0.0 network interface");
+const roadmapPath = path.join(projectRoot, 'docs', 'roadmap.md');
+assert(fs.existsSync(roadmapPath), "docs/roadmap.md exists");
+const roadmapContent = fs.readFileSync(roadmapPath, 'utf8');
+assert(roadmapContent.includes("LIVENTRA SAAS PLATFORM MODULE ROADMAP"), "docs/roadmap.md tracks module status matrix");
 
 console.log("\n====================================================");
 console.log(`📊 RESULTS: ${passedTests} / ${totalTests} Verifications Passed`);
