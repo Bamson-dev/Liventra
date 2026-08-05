@@ -2,6 +2,12 @@
 /node_modules/
 /playwright-report/
 /test-results/
+.phpunit.cache/
+.phpstan.cache/
+.psalm.cache/
+.build/
 *.log
 *.zip
+*.tmp
+*.bak
 .DS_Store
