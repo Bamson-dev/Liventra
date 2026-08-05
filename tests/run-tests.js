@@ -786,6 +786,15 @@ assert(rootPkgContent.includes("node services/api/server.js"), "Root package.jso
 const serverApiPath = path.join(projectRoot, 'services', 'api', 'server.js');
 assert(fs.existsSync(serverApiPath), "services/api/server.js exists");
 const serverApiContent = fs.readFileSync(serverApiPath, 'utf8');
+const authSpecPath = path.join(projectRoot, 'tests', 'Playwright', 'authentication.spec.ts');
+assert(fs.existsSync(authSpecPath), "tests/Playwright/authentication.spec.ts exists");
+
+const vidSpecPath = path.join(projectRoot, 'tests', 'Playwright', 'video-library.spec.ts');
+assert(fs.existsSync(vidSpecPath), "tests/Playwright/video-library.spec.ts exists");
+
+const webSpecPath = path.join(projectRoot, 'tests', 'Playwright', 'webinar-builder.spec.ts');
+assert(fs.existsSync(webSpecPath), "tests/Playwright/webinar-builder.spec.ts exists");
+
 const roadmapPath = path.join(projectRoot, 'docs', 'roadmap.md');
 assert(fs.existsSync(roadmapPath), "docs/roadmap.md exists");
 const roadmapContent = fs.readFileSync(roadmapPath, 'utf8');
