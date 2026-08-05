@@ -767,6 +767,27 @@ assert(ctaJsContent.includes("class LiventraCTAEngine"), "LiventraCTAEngine JS c
 const cssPath = path.join(projectRoot, 'assets', 'css', 'frontend.css');
 assert(fs.existsSync(cssPath), "assets/css/frontend.css exists");
 
+// 8. Verifying Docker & Coolify Deployment Specs
+console.log("\n--- 8. Verifying Docker & Coolify Deployment Specs ---");
+const rootDockerPath = path.join(projectRoot, 'Dockerfile');
+assert(fs.existsSync(rootDockerPath), "Root Dockerfile exists");
+const rootDockerContent = fs.readFileSync(rootDockerPath, 'utf8');
+assert(rootDockerContent.includes("EXPOSE 3000"), "Dockerfile exposes port 3000");
+assert(rootDockerContent.includes('CMD ["npm", "start"]') || rootDockerContent.includes('CMD ["node"'), "Dockerfile defines start command");
+
+const rootComposePath = path.join(projectRoot, 'docker-compose.yml');
+assert(fs.existsSync(rootComposePath), "Root docker-compose.yml exists");
+
+const rootPkgPath = path.join(projectRoot, 'package.json');
+assert(fs.existsSync(rootPkgPath), "Root package.json exists");
+const rootPkgContent = fs.readFileSync(rootPkgPath, 'utf8');
+assert(rootPkgContent.includes("node services/api/server.js"), "Root package.json start script points to services/api/server.js");
+
+const serverApiPath = path.join(projectRoot, 'services', 'api', 'server.js');
+assert(fs.existsSync(serverApiPath), "services/api/server.js exists");
+const serverApiContent = fs.readFileSync(serverApiPath, 'utf8');
+assert(serverApiContent.includes("0.0.0.0"), "Express server explicitly binds to 0.0.0.0 network interface");
+
 console.log("\n====================================================");
 console.log(`📊 RESULTS: ${passedTests} / ${totalTests} Verifications Passed`);
 console.log("====================================================");
