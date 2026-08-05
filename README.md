@@ -1,94 +1,58 @@
-# ⚡ Liventra — Enterprise Realtime Webinar Platform for WordPress
+# 🚀 Liventra — Cloud-Native Webinar Platform
 
-[![CI Pipeline](https://github.com/Bamson-dev/Liventra/actions/workflows/ci.yml/badge.svg)](https://github.com/Bamson-dev/Liventra/actions)
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Release](https://img.shields.io/badge/Release-v1.0.0--rc1-indigo.svg)](https://github.com/Bamson-dev/Liventra/releases)
-
-**Liventra** is the premier, enterprise-grade automated webinar simulation and live engagement platform built natively for WordPress. Operating on a robust **Event-Driven Architecture (EDA)**, Liventra powers high-concurrency automated webinars, deterministic timeline execution, chromeless video playback, dynamic call-to-action (CTA) conversions, live chat, multi-tenant organizations, and third-party developer plugin ecosystems.
+**Liventra** is a modern, cloud-native SaaS webinar platform designed to transform pre-recorded videos into interactive, high-converting live webinar experiences. Embedded anywhere using Universal SDKs, APIs, and multi-platform connectors (WordPress, Shopify, Webflow, React, Vue, Next.js, Laravel, HTML).
 
 ---
 
-## 🏗️ Architecture Overview
+## 🌟 Core Features
 
-Liventra is built on **19 Production Specifications (PRD-001 through PRD-019)** enforcing strict SOLID separation of concerns, PSR-4 autoloader compliance, constructor dependency injection, thin controllers, persistence-only repositories, and orchestration-only services.
+- 🎥 **Standalone Cloud SaaS Dashboard**: Intuitive SaaS admin studio for managing webinars, video assets, and conversion funnels.
+- 📹 **Dedicated Video Library**: Direct drag-and-drop video uploads, thumbnail generation, duration calculation, and reusable asset storage.
+- 🔒 **Advanced Playback Security & Lock Controls**: Forward seek prevention, forced 1.0x playback speed lock, and dynamic attendee watermark overlays.
+- 💬 **Simulated Live Chat Stream**: Scripted chat timeline with timestamps, speaker avatars, and real-time audience engagement.
+- ⚡ **Timed Conversion Offers**: Pop-up conversion offer banners with countdown timers and direct checkout integration.
+- 🔗 **Universal Embedding Anywhere**: 1-click embed code generators for JavaScript (`embed.js`), React (`<LiventraLiveRoom />`), Vue, iFrame, HTML, and WordPress shortcodes.
+- 🐳 **Coolify & Docker VPS Ready**: 1-click deployment on Contabo/Hetzner VPS via Docker and Coolify.
 
-```text
-[ Client Session Engine (Tickers & Video) ]
-                    │
-                    ▼
-       [ Authoritative REST API ]
-                    │
-                    ▼
-          [ Security Platform ]
-      (SSO, Rate Limits, Audit Logs)
-                    │
-                    ▼
-     [ Core Orchestration Services ]
-   (Timeline, CTA, Chat, Video, Registrations)
-                    │
-                    ▼
-     [ Enterprise & Multi-Tenant Layer ]
-      (Orgs, Workspaces, White-Labeling)
-                    │
-                    ▼
-       [ EventBus & Analytics Engine ]
+---
+
+## 🏗️ Architecture & Monorepo Structure
+
+```
+liventra/
+├── apps/
+│   ├── dashboard/        # SaaS Admin Studio & Webinar Builder
+│   ├── attendee/         # Standalone Live Room & Replay Player
+│   └── landing/          # Platform Marketing Site & Developer Portal
+├── packages/
+│   ├── sdk-js/           # Universal embed.js JavaScript SDK
+│   ├── sdk-react/        # React SDK Components (<LiventraLiveRoom />)
+│   ├── sdk-vue/          # Vue 3 SDK Components
+│   └── ui/               # Unified Design System
+├── services/
+│   ├── api/              # Standalone Node/Express REST API Gateway
+│   ├── video/            # Video Asset Manager & Storage Service
+│   └── analytics/        # Real-time Analytics & Revenue Engine
+├── integrations/
+│   ├── wordpress/        # WordPress Connector Plugin
+│   ├── shopify/          # Shopify App Connector
+│   └── webflow/          # Webflow Embed Component
+├── docker/               # Coolify & Docker Compose Production Configs
+└── nginx/                # Nginx Reverse Proxy Configuration
 ```
 
 ---
 
-## 🚀 Quick Start & Installation
+## ⚡ Deployment on VPS via Coolify
 
-### Requirements
-* PHP `>= 7.4` (PHP 8.2+ recommended)
-* WordPress `>= 5.8`
-* MySQL `>= 5.7` or MariaDB `>= 10.3`
+Deploy Liventra directly on any VPS (Contabo, Hetzner, DigitalOcean) using Coolify:
 
-### Developer Setup
 ```bash
-git clone https://github.com/Bamson-dev/Liventra.git
-cd Liventra
-composer install
-node tests/run-tests.js
+chmod +x scripts/deploy-coolify.sh
+./scripts/deploy-coolify.sh
 ```
 
 ---
 
-## 🧪 Testing & Code Quality
-
-Run the complete verification suite:
-```bash
-composer quality
-```
-
-Runs:
-* Static Analysis (`PHPStan` Level 9, `Psalm` Strict Mode)
-* Coding Standards (`PHPCS` WordPress Standards)
-* Unit & Integration Tests (`PHPUnit`)
-* E2E Browser Testing (`Playwright`)
-
----
-
-## 👤 Author & Project Ownership
-
-Liventra is solely authored, owned, designed, and maintained by **Bamidele Matthew**.
-
-* **Author**: Bamidele Matthew
-* **Maintainer**: Bamidele Matthew
-* **System Architect**: Bamidele Matthew
-* **Lead Software Engineer**: Bamidele Matthew
-* **GitHub**: [https://github.com/Bamson-dev](https://github.com/Bamson-dev)
-* **Repository**: [https://github.com/Bamson-dev/Liventra](https://github.com/Bamson-dev/Liventra)
-
----
-
-## 📜 Documentation & Contributing
-
-* **[CONTRIBUTING.md](file:///Users/donbamz/Liventra/CONTRIBUTING.md)**: Open-source contribution guidelines.
-* **[SECURITY.md](file:///Users/donbamz/Liventra/SECURITY.md)**: Vulnerability disclosure & security policy.
-* **[CHANGELOG.md](file:///Users/donbamz/Liventra/CHANGELOG.md)**: Version release notes.
-* **[RELEASE.md](file:///Users/donbamz/Liventra/RELEASE.md)**: Release candidate verification process.
-
----
-
-## ⚖️ License
-Liventra is open-source software licensed under the **GNU General Public License v3.0 or later**.
+## 📄 License
+Commercial Enterprise License © 2026 Liventra. All rights reserved.
