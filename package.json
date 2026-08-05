@@ -1,0 +1,17 @@
+{
+  "name": "liventra",
+  "version": "3.0.0",
+  "description": "Liventra - Cloud-Native SaaS Webinar Platform",
+  "main": "services/api/server.js",
+  "scripts": {
+    "start": "node services/api/server.js",
+    "dev": "node services/api/server.js",
+    "test": "node tests/run-tests.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {},
+  "private": true
+}
