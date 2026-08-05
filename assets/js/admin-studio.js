@@ -44,10 +44,7 @@
                     this.webinars = [];
                 }
             } else {
-                this.webinars = [
-                    { id: 1, title: 'High-Ticket Evergreen Masterclass', status: 'published', attendees: 142, revenue: '$14,850', watchTime: '24m 18s', provider: 'Bunny.net CDN' },
-                    { id: 2, title: 'SaaS Automated Onboarding Demo', status: 'published', attendees: 89, revenue: '$8,200', watchTime: '18m 45s', provider: 'HLS Stream' }
-                ];
+                this.webinars = [];
                 localStorage.setItem('liventra_webinars_store', JSON.stringify(this.webinars));
             }
 
@@ -399,22 +396,20 @@
         }
 
         renderHomeView() {
+            const totalAttendees = this.webinars.reduce((acc, w) => acc + (w.attendees || 0), 0);
+            const totalRevenue = this.webinars.reduce((acc, w) => acc + (typeof w.revenue === 'number' ? w.revenue : (parseInt((w.revenue || '0').replace(/[^0-9]/g, ''), 10) || 0)), 0);
+
             return `
                 <div class="liventra-metrics-grid">
                     <div class="liventra-card">
-                        <div class="liventra-card-title">Live Audience Right Now</div>
-                        <div class="liventra-card-value">142 Attendees</div>
-                        <div class="liventra-card-subtext">▲ +18.4% Retention</div>
+                        <div class="liventra-card-title">Total Registrations / Attendees</div>
+                        <div class="liventra-card-value">${totalAttendees} Attendees</div>
+                        <div class="liventra-card-subtext">Real-time Platform Active</div>
                     </div>
                     <div class="liventra-card">
-                        <div class="liventra-card-title">Total Offer Revenue</div>
-                        <div class="liventra-card-value">$23,050</div>
-                        <div class="liventra-card-subtext">▲ 12.4% Conversion Rate</div>
-                    </div>
-                    <div class="liventra-card">
-                        <div class="liventra-card-title">Average Watch Time</div>
-                        <div class="liventra-card-value">24m 18s</div>
-                        <div class="liventra-card-subtext">84% Session Completion</div>
+                        <div class="liventra-card-title">Total Tracked Revenue</div>
+                        <div class="liventra-card-value">$${totalRevenue.toLocaleString()}</div>
+                        <div class="liventra-card-subtext">Live CTA Conversion Revenue</div>
                     </div>
                     <div class="liventra-card">
                         <div class="liventra-card-title">Active Webinars</div>
@@ -1003,57 +998,79 @@
         }
 
         renderContactsView() {
+            let contacts = [];
+            try {
+                contacts = JSON.parse(localStorage.getItem('liventra_contacts_store') || '[]');
+            } catch(e) {
+                contacts = [];
+            }
+
             return `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                    <h3 style="margin:0; font-size:18px; color:var(--lv-text);">👥 Registrants & Attendees</h3>
-                    <button class="liventra-btn liventra-btn-secondary" onclick="alert('Exporting Registrants CSV...')">📥 Export CSV</button>
+                    <h3 style="margin:0; font-size:18px; color:var(--lv-text);">👥 Registrants & Attendees (${contacts.length})</h3>
+                    <button class="liventra-btn liventra-btn-secondary" onclick="alert('Exporting ${contacts.length} Registrants to CSV...')">📥 Export CSV</button>
                 </div>
                 <div class="liventra-card">
-                    <table style="width:100%; border-collapse:collapse; font-size:13px; color:var(--lv-text);">
-                        <thead>
-                            <tr style="border-bottom:1px solid var(--lv-border); text-align:left; color:var(--lv-text-muted);">
-                                <th style="padding:10px;">Name</th>
-                                <th style="padding:10px;">Email</th>
-                                <th style="padding:10px;">Registered Session</th>
-                                <th style="padding:10px;">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr style="border-bottom:1px solid var(--lv-border);">
-                                <td style="padding:12px; font-weight:600;">John Doe</td>
-                                <td style="padding:12px; color:var(--lv-text-muted);">john@example.com</td>
-                                <td style="padding:12px;">High-Ticket Masterclass</td>
-                                <td style="padding:12px;"><span class="liventra-badge liventra-badge-success">Attended (38m)</span></td>
-                            </tr>
-                            <tr style="border-bottom:1px solid var(--lv-border);">
-                                <td style="padding:12px; font-weight:600;">Sarah Smith</td>
-                                <td style="padding:12px; color:var(--lv-text-muted);">sarah@acme.com</td>
-                                <td style="padding:12px;">Onboarding Demo</td>
-                                <td style="padding:12px;"><span class="liventra-badge liventra-badge-primary">Registered</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    ${contacts.length === 0 ? `
+                        <div style="padding:40px; text-align:center; color:var(--lv-text-muted);">
+                            <div style="font-size:32px; margin-bottom:8px;">👥</div>
+                            <h4 style="margin:0 0 6px 0; color:var(--lv-text);">No Contacts Registered Yet</h4>
+                            <p style="margin:0;">Share your webinar registration link to collect registrants and attendees.</p>
+                        </div>
+                    ` : `
+                        <table style="width:100%; border-collapse:collapse; font-size:13px; color:var(--lv-text);">
+                            <thead>
+                                <tr style="border-bottom:1px solid var(--lv-border); text-align:left; color:var(--lv-text-muted);">
+                                    <th style="padding:10px;">Name</th>
+                                    <th style="padding:10px;">Email</th>
+                                    <th style="padding:10px;">Registered Session</th>
+                                    <th style="padding:10px;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${contacts.map(c => `
+                                    <tr style="border-bottom:1px solid var(--lv-border);">
+                                        <td style="padding:12px; font-weight:600;">${c.name}</td>
+                                        <td style="padding:12px; color:var(--lv-text-muted);">${c.email}</td>
+                                        <td style="padding:12px;">${c.webinarTitle || 'Evergreen Webinar'}</td>
+                                        <td style="padding:12px;"><span class="liventra-badge liventra-badge-success">${c.status || 'Registered'}</span></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `}
                 </div>
             `;
         }
 
         renderAnalyticsView() {
+            let contacts = [];
+            try {
+                contacts = JSON.parse(localStorage.getItem('liventra_contacts_store') || '[]');
+            } catch(e) { contacts = []; }
+
+            const totalWebinars = this.webinars.length;
+            const publishedWebinars = this.webinars.filter(w => w.status === 'published').length;
+            const totalRegistrants = contacts.length;
+            const attendedCount = contacts.filter(c => c.status && c.status.toLowerCase().includes('attended')).length;
+            const attendanceRate = totalRegistrants > 0 ? ((attendedCount / totalRegistrants) * 100).toFixed(1) : 0;
+
             return `
                 <div class="liventra-metrics-grid">
                     <div class="liventra-card">
-                        <div class="liventra-card-title">Registration Conversion</div>
-                        <div class="liventra-card-value">42.8%</div>
-                        <div class="liventra-card-subtext">▲ +5.2% Optimization</div>
+                        <div class="liventra-card-title">Total Registrants</div>
+                        <div class="liventra-card-value">${totalRegistrants} Leads</div>
+                        <div class="liventra-card-subtext">Real Database Registrations</div>
                     </div>
                     <div class="liventra-card">
                         <div class="liventra-card-title">Attendance Rate</div>
-                        <div class="liventra-card-value">68.4%</div>
-                        <div class="liventra-card-subtext">Above Industry Average</div>
+                        <div class="liventra-card-value">${attendanceRate}%</div>
+                        <div class="liventra-card-subtext">${attendedCount} Attended Live Sessions</div>
                     </div>
                     <div class="liventra-card">
-                        <div class="liventra-card-title">Total Offer Clicks</div>
-                        <div class="liventra-card-value">314 Clicks</div>
-                        <div class="liventra-card-subtext">12.4% Revenue Conversion</div>
+                        <div class="liventra-card-title">Published Webinars</div>
+                        <div class="liventra-card-value">${publishedWebinars} / ${totalWebinars}</div>
+                        <div class="liventra-card-subtext">Active Live & Replay Funnels</div>
                     </div>
                 </div>
             `;

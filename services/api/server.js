@@ -18,15 +18,9 @@ app.use('/assets', express.static(path.join(__dirname, '../../assets')));
 app.use('/packages', express.static(path.join(__dirname, '../../packages')));
 
 // In-Memory Cloud Store (Synced with Supabase Cloud DB)
-let webinarsStore = [
-    { id: 1, title: 'High-Ticket Evergreen Sales Masterclass', status: 'published', attendees: 142, revenue: '$14,850', watchTime: '24m 18s', provider: 'Bunny Stream CDN' },
-    { id: 2, title: 'SaaS Automated Onboarding Demo', status: 'published', attendees: 89, revenue: '$8,200', watchTime: '18m 45s', provider: 'Cloudflare R2' }
-];
-
-let videosStore = [
-    { id: 'vid_1', title: 'High-Ticket Sales Presentation', duration: '42:15', size: '342 MB', provider: 'Liventra Cloud Video' },
-    { id: 'vid_2', title: 'SaaS Product Walkthrough', duration: '18:45', size: '185 MB', provider: 'Bunny Stream CDN' }
-];
+let webinarsStore = [];
+let videosStore = [];
+let contactsStore = [];
 
 // 1. Health Checks
 app.get('/health', (req, res) => {
@@ -62,7 +56,7 @@ app.get('/api/webinars', (req, res) => {
 });
 
 app.post('/api/webinars', (req, res) => {
-    const webinar = { id: Date.now(), ...req.body, status: 'published', attendees: 0, revenue: '$0' };
+    const webinar = { id: Date.now(), ...req.body, status: 'published', attendees: 0, revenue: 0 };
     webinarsStore.unshift(webinar);
     res.status(201).json(webinar);
 });
@@ -93,21 +87,30 @@ app.post('/api/videos/upload', (req, res) => {
 
 // 5. Analytics API
 app.get('/api/analytics', (req, res) => {
+    const totalAttendees = webinarsStore.reduce((acc, w) => acc + (w.attendees || 0), 0);
+    const totalRevenue = webinarsStore.reduce((acc, w) => acc + (typeof w.revenue === 'number' ? w.revenue : 0), 0);
+    const totalContacts = contactsStore.length;
+    const attendedCount = contactsStore.filter(c => c.status && c.status.toLowerCase().includes('attended')).length;
+    const attendanceRate = totalContacts > 0 ? parseFloat(((attendedCount / totalContacts) * 100).toFixed(1)) : 0;
+
     res.json({
-        liveAudience: 142,
-        totalRevenue: 23050,
-        conversionRate: 42.8,
-        attendanceRate: 68.4,
-        offerClicks: 314
+        liveAudience: totalAttendees,
+        totalRevenue: totalRevenue,
+        totalContacts: totalContacts,
+        attendanceRate: attendanceRate,
+        publishedWebinars: webinarsStore.filter(w => w.status === 'published').length
     });
 });
 
 // 6. Contacts API
 app.get('/api/contacts', (req, res) => {
-    res.json([
-        { id: 1, name: 'John Doe', email: 'john@example.com', session: 'High-Ticket Masterclass', status: 'Attended (38m)' },
-        { id: 2, name: 'Sarah Smith', email: 'sarah@acme.com', session: 'Onboarding Demo', status: 'Registered' }
-    ]);
+    res.json(contactsStore);
+});
+
+app.post('/api/contacts', (req, res) => {
+    const contact = { id: Date.now(), ...req.body, created_at: new Date().toISOString() };
+    contactsStore.unshift(contact);
+    res.status(201).json(contact);
 });
 
 // 7. Integrations API

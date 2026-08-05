@@ -19,10 +19,7 @@
                     this.videos = [];
                 }
             } else {
-                this.videos = [
-                    { id: 'vid_1', title: 'High-Ticket Evergreen Sales Masterclass', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', duration: '42:15', size: '342 MB', provider: 'Liventra Cloud Video', created_at: '2026-07-28', used_in: 2, thumb: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=400&auto=format&fit=crop&q=80' },
-                    { id: 'vid_2', title: 'SaaS Automated Onboarding Demo Video', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4', duration: '18:45', size: '185 MB', provider: 'Bunny Stream CDN', created_at: '2026-07-29', used_in: 1, thumb: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=400&auto=format&fit=crop&q=80' }
-                ];
+                this.videos = [];
                 localStorage.setItem('liventra_video_library', JSON.stringify(this.videos));
             }
 
