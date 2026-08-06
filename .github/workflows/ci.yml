@@ -1,4 +1,4 @@
-name: Liventra Continuous Integration Pipeline
+name: Liventra Continuous Integration & Playwright Evidence Pipeline
 
 on:
   push:
@@ -12,6 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -19,7 +24,29 @@ jobs:
           coverage: none
 
       - name: Install Dependencies
-        run: composer install --prefer-dist --no-progress
+        run: |
+          npm install
+          npm install --save-dev @playwright/test
+          npx playwright install --with-deps
 
-      - name: Run Test Suite
+      - name: Run Architecture Verifications
         run: node tests/run-tests.js
+
+      - name: Start Application Server
+        run: |
+          npm start &
+          npx wait-on http://localhost:3000/health --timeout 30000
+
+      - name: Execute Playwright Evidence Test Suite
+        run: npx playwright test
+
+      - name: Upload Playwright Evidence Artifacts (Videos, Screenshots, Traces, HTML Report)
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-evidence-artifacts
+          path: |
+            playwright-report/
+            test-results/
+            artifacts/
+          retention-days: 30
