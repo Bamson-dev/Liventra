@@ -1,4 +1,4 @@
-name: Liventra RC Release Packaging
+name: Liventra Production Release & Docker Build Pipeline
 
 on:
   push:
@@ -6,13 +6,51 @@ on:
       - 'v*'
 
 jobs:
-  release:
+  release-verification:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Build Release Package
-        run: zip -r liventra-v1.0.0-rc1.zip . -x "*.git*" "node_modules/*" "tests/*"
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          files: liventra-v1.0.0-rc1.zip
+          node-version: '18'
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Install Dependencies & Playwright
+        run: |
+          npm install
+          npx playwright install --with-deps
+
+      - name: Verify Architecture & Subsystems
+        run: node tests/run-tests.js
+
+      - name: Build Docker Container Image
+        run: docker build -t liventra-cloud:latest .
+
+      - name: Start Container & Run Health Check
+        run: |
+          docker run -d -p 3000:3000 --name liventra-app liventra-cloud:latest
+          sleep 10
+          curl -f http://localhost:3000/health || exit 1
+
+      - name: Execute Playwright Suite Against Docker Container
+        run: npx playwright test
+        env:
+          BASE_URL: 'http://localhost:3000'
+
+      - name: Upload Release Evidence Artifacts
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: release-playwright-evidence-${{ github.ref_name }}
+          path: |
+            playwright-report/
+            test-results/
+            artifacts/
+          retention-days: 60
